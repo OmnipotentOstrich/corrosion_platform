@@ -1,0 +1,115 @@
+// 清除浮动
+@mixin clearfix {
+  &::after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+}
+
+// 文本省略
+@mixin text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// 多行文本省略
+@mixin text-ellipsis-multiline($lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// 居中
+@mixin center($width: null, $height: null) {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  
+  @if not $width and not $height {
+    transform: translate(-50%, -50%);
+  } @else if $width and $height {
+    width: $width;
+    height: $height;
+    margin: (-$height / 2) 0 0 (-$width / 2);
+  } @else if not $height {
+    width: $width;
+    margin-left: (-$width / 2);
+    transform: translateY(-50%);
+  } @else {
+    height: $height;
+    margin-top: (-$height / 2);
+    transform: translateX(-50%);
+  }
+}
+
+// 响应式断点
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == xs {
+    @media (max-width: 575px) { @content; }
+  }
+  @if $breakpoint == sm {
+    @media (min-width: 576px) and (max-width: 767px) { @content; }
+  }
+  @if $breakpoint == md {
+    @media (min-width: 768px) and (max-width: 991px) { @content; }
+  }
+  @if $breakpoint == lg {
+    @media (min-width: 992px) and (max-width: 1199px) { @content; }
+  }
+  @if $breakpoint == xl {
+    @media (min-width: 1200px) { @content; }
+  }
+}
+
+// 按钮样式
+@mixin button-variant($color, $background, $border) {
+  color: $color;
+  background-color: $background;
+  border-color: $border;
+  
+  &:hover,
+  &:focus {
+    background-color: lighten($background, 10%);
+    border-color: lighten($border, 10%);
+  }
+  
+  &:active {
+    background-color: darken($background, 5%);
+    border-color: darken($border, 5%);
+  }
+}
+
+// 卡片样式
+@mixin card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+// 输入框样式
+@mixin input {
+  width: 100%;
+  height: 40px;
+  padding: 0 15px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #606266;
+  background-color: #fff;
+  transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+  
+  &:focus {
+    outline: none;
+    border-color: #409eff;
+  }
+  
+  &::placeholder {
+    color: #c0c4cc;
+  }
+}

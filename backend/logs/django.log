@@ -1,0 +1,274 @@
+INFO 2025-10-14 09:56:46,753 autoreload 31644 29756 Watching for file changes with StatReloader
+INFO 2025-10-14 10:00:23,961 autoreload 22488 24500 Watching for file changes with StatReloader
+INFO 2025-10-15 08:26:40,225 autoreload 11212 17548 Watching for file changes with StatReloader
+WARNING 2025-10-15 08:27:10,688 log 11212 22988 Not Found: /
+WARNING 2025-10-15 08:27:10,691 basehttp 11212 22988 "GET / HTTP/1.1" 404 3400
+WARNING 2025-10-15 08:27:11,082 log 11212 22988 Not Found: /favicon.ico
+WARNING 2025-10-15 08:27:11,084 basehttp 11212 22988 "GET /favicon.ico HTTP/1.1" 404 3451
+INFO 2025-10-15 08:27:15,502 basehttp 11212 22988 "GET /admin/ HTTP/1.1" 302 0
+INFO 2025-10-15 08:27:15,560 basehttp 11212 22988 "GET /admin/login/?next=/admin/ HTTP/1.1" 200 4195
+INFO 2025-10-15 08:27:16,170 basehttp 11212 26348 "GET /static/admin/css/responsive.css HTTP/1.1" 200 18533
+INFO 2025-10-15 08:27:16,189 basehttp 11212 26196 "GET /static/admin/css/dark_mode.css HTTP/1.1" 200 2929
+INFO 2025-10-15 08:27:16,266 basehttp 11212 27104 "GET /static/admin/css/nav_sidebar.css HTTP/1.1" 200 2694
+INFO 2025-10-15 08:27:16,296 basehttp 11212 13556 "GET /static/admin/css/login.css HTTP/1.1" 200 958
+INFO 2025-10-15 08:27:16,297 basehttp 11212 22988 "GET /static/admin/css/base.css HTTP/1.1" 200 21207
+INFO 2025-10-15 08:27:16,326 basehttp 11212 22988 "GET /static/admin/js/theme.js HTTP/1.1" 200 1943
+INFO 2025-10-15 08:27:16,327 basehttp 11212 13556 "GET /static/admin/js/nav_sidebar.js HTTP/1.1" 200 3063
+INFO 2025-10-15 08:27:30,454 basehttp 11212 13556 "POST /admin/login/?next=/admin/ HTTP/1.1" 200 4327
+INFO 2025-10-15 08:30:32,254 basehttp 11212 13556 "POST /admin/login/?next=/admin/ HTTP/1.1" 200 4327
+INFO 2025-10-15 08:30:35,152 basehttp 11212 13556 "POST /admin/login/?next=/admin/ HTTP/1.1" 200 4327
+INFO 2025-10-15 08:30:57,567 basehttp 11212 13556 "POST /admin/login/?next=/admin/ HTTP/1.1" 200 4327
+INFO 2025-10-15 08:31:28,706 autoreload 9372 24492 Watching for file changes with StatReloader
+INFO 2025-10-15 08:31:33,062 basehttp 9372 26032 "POST /admin/login/?next=/admin/ HTTP/1.1" 200 4327
+INFO 2025-10-15 08:31:37,716 basehttp 9372 26032 "GET /admin/login/ HTTP/1.1" 200 4182
+INFO 2025-10-15 08:31:42,956 basehttp 9372 26032 "POST /admin/login/ HTTP/1.1" 200 4314
+INFO 2025-10-15 08:31:47,979 basehttp 9372 26032 "POST /admin/login/ HTTP/1.1" 200 4314
+WARNING 2025-10-15 08:55:42,515 log 9372 3136 Bad Request: /api/v1/auth/login/
+WARNING 2025-10-15 08:55:42,517 basehttp 9372 3136 "POST /api/v1/auth/login/ HTTP/1.1" 400 49
+WARNING 2025-10-15 08:58:46,032 log 9372 28292 Unauthorized: /api/v1/auth/profile/
+WARNING 2025-10-15 08:58:46,034 basehttp 9372 28292 "GET /api/v1/auth/profile/ HTTP/1.1" 401 179
+WARNING 2025-10-15 08:59:27,728 log 9372 27936 Unauthorized: /api/v1/auth/profile/
+WARNING 2025-10-15 08:59:27,731 basehttp 9372 27936 "GET /api/v1/auth/profile/ HTTP/1.1" 401 179
+WARNING 2025-10-15 09:00:54,192 log 9372 27908 Unauthorized: /api/v1/auth/profile/
+WARNING 2025-10-15 09:00:54,193 basehttp 9372 27908 "GET /api/v1/auth/profile/ HTTP/1.1" 401 179
+WARNING 2025-10-15 09:01:52,539 log 9372 6644 Unauthorized: /api/v1/auth/profile/
+WARNING 2025-10-15 09:01:52,541 basehttp 9372 6644 "GET /api/v1/auth/profile/ HTTP/1.1" 401 179
+WARNING 2025-10-15 09:04:42,673 log 9372 28116 Unauthorized: /api/v1/auth/profile/
+WARNING 2025-10-15 09:04:42,675 basehttp 9372 28116 "GET /api/v1/auth/profile/ HTTP/1.1" 401 179
+WARNING 2025-10-15 09:05:07,862 log 9372 28652 Unauthorized: /api/v1/auth/profile/
+WARNING 2025-10-15 09:05:07,864 basehttp 9372 28652 "GET /api/v1/auth/profile/ HTTP/1.1" 401 179
+WARNING 2025-10-15 09:40:15,467 log 9372 19684 Unauthorized: /api/v1/auth/users/
+WARNING 2025-10-15 09:40:15,470 basehttp 9372 19684 "POST /api/v1/auth/users/ HTTP/1.1" 401 43
+WARNING 2025-10-15 09:40:29,796 log 9372 27820 Bad Request: /api/v1/auth/login/
+WARNING 2025-10-15 09:40:29,797 basehttp 9372 27820 "POST /api/v1/auth/login/ HTTP/1.1" 400 49
+INFO 2025-10-15 09:51:02,198 autoreload 9372 24492 E:\corrosion_platform\backend\apps\users\views.py changed, reloading.
+INFO 2025-10-15 09:51:04,818 autoreload 19868 13732 Watching for file changes with StatReloader
+INFO 2025-10-15 09:51:08,201 autoreload 19868 13732 E:\corrosion_platform\backend\apps\users\urls.py changed, reloading.
+INFO 2025-10-15 09:51:10,511 autoreload 11152 29624 Watching for file changes with StatReloader
+INFO 2025-10-15 09:51:41,543 autoreload 11152 29624 E:\corrosion_platform\backend\apps\users\views.py changed, reloading.
+INFO 2025-10-15 09:51:44,027 autoreload 4488 27016 Watching for file changes with StatReloader
+WARNING 2025-10-15 09:56:40,468 log 4488 28828 Bad Request: /api/v1/auth/register/
+WARNING 2025-10-15 09:56:40,470 basehttp 4488 28828 "POST /api/v1/auth/register/ HTTP/1.1" 400 134
+WARNING 2025-10-15 09:56:59,050 log 4488 28088 Bad Request: /api/v1/auth/register/
+WARNING 2025-10-15 09:56:59,052 basehttp 4488 28088 "POST /api/v1/auth/register/ HTTP/1.1" 400 134
+INFO 2025-10-15 09:57:59,930 basehttp 4488 29584 "POST /api/v1/auth/register/ HTTP/1.1" 201 411
+WARNING 2025-10-15 09:59:30,509 log 4488 28080 Bad Request: /api/v1/auth/register/
+WARNING 2025-10-15 09:59:30,511 basehttp 4488 28080 "POST /api/v1/auth/register/ HTTP/1.1" 400 134
+INFO 2025-10-15 10:01:50,635 basehttp 4488 19184 "POST /api/v1/auth/register/ HTTP/1.1" 201 411
+INFO 2025-10-15 10:02:40,435 basehttp 4488 27880 "POST /api/v1/auth/register/ HTTP/1.1" 201 417
+WARNING 2025-10-15 10:03:14,994 log 4488 29000 Bad Request: /api/v1/auth/register/
+WARNING 2025-10-15 10:03:14,995 basehttp 4488 29000 "POST /api/v1/auth/register/ HTTP/1.1" 400 134
+INFO 2025-10-15 23:39:56,634 autoreload 29148 27460 Watching for file changes with StatReloader
+INFO 2025-10-15 23:56:21,022 autoreload 32244 31568 Watching for file changes with StatReloader
+WARNING 2025-10-15 23:57:52,074 log 32244 32656 Bad Request: /api/v1/auth/register/
+WARNING 2025-10-15 23:57:52,075 basehttp 32244 32656 "POST /api/v1/auth/register/ HTTP/1.1" 400 134
+INFO 2025-10-15 23:59:40,969 autoreload 32244 31568 E:\corrosion_platform\backend\apps\users\serializers.py changed, reloading.
+INFO 2025-10-15 23:59:42,974 autoreload 32548 29080 Watching for file changes with StatReloader
+INFO 2025-10-16 00:00:30,057 autoreload 31216 1564 Watching for file changes with StatReloader
+INFO 2025-10-16 00:01:20,526 basehttp 32548 32436 "POST /api/v1/auth/register/ HTTP/1.1" 201 451
+INFO 2025-10-16 00:01:20,980 basehttp 32548 32068 "POST /api/v1/auth/login/ HTTP/1.1" 200 908
+WARNING 2025-10-16 00:01:20,997 log 32548 14920 Bad Request: /api/v1/auth/register/
+WARNING 2025-10-16 00:01:20,999 basehttp 32548 14920 "POST /api/v1/auth/register/ HTTP/1.1" 400 54
+WARNING 2025-10-16 00:01:21,015 log 32548 31220 Bad Request: /api/v1/auth/register/
+WARNING 2025-10-16 00:01:21,016 basehttp 32548 31220 "POST /api/v1/auth/register/ HTTP/1.1" 400 54
+INFO 2025-10-16 00:03:12,161 autoreload 32548 29080 E:\corrosion_platform\backend\apps\users\serializers.py changed, reloading.
+INFO 2025-10-16 00:03:12,536 autoreload 31216 1564 E:\corrosion_platform\backend\apps\users\serializers.py changed, reloading.
+INFO 2025-10-16 00:03:13,729 autoreload 31948 32256 Watching for file changes with StatReloader
+INFO 2025-10-16 00:03:14,335 autoreload 20228 7132 Watching for file changes with StatReloader
+WARNING 2025-10-16 00:10:56,685 log 31948 31564 Bad Request: /api/v1/auth/register/
+WARNING 2025-10-16 00:10:56,686 basehttp 31948 31564 "POST /api/v1/auth/register/ HTTP/1.1" 400 134
+WARNING 2025-10-16 00:11:02,506 log 31948 30624 Bad Request: /api/v1/auth/register/
+WARNING 2025-10-16 00:11:02,508 basehttp 31948 30624 "POST /api/v1/auth/register/ HTTP/1.1" 400 71
+INFO 2025-10-16 00:11:11,950 basehttp 31948 32436 "POST /api/v1/auth/register/ HTTP/1.1" 201 413
+INFO 2025-10-16 00:11:27,855 basehttp 31948 31900 "POST /api/v1/auth/login/ HTTP/1.1" 200 870
+INFO 2025-10-16 00:11:27,881 basehttp 31948 32560 "GET /api/v1/auth/user-menus/ HTTP/1.1" 200 2
+INFO 2025-10-16 00:13:54,538 autoreload 31948 32256 E:\corrosion_platform\backend\apps\users\serializers.py changed, reloading.
+INFO 2025-10-16 00:13:54,795 autoreload 20228 7132 E:\corrosion_platform\backend\apps\users\serializers.py changed, reloading.
+INFO 2025-10-16 00:13:55,568 autoreload 17540 29080 Watching for file changes with StatReloader
+INFO 2025-10-16 00:13:56,901 autoreload 29028 6816 Watching for file changes with StatReloader
+INFO 2025-10-16 00:14:48,713 basehttp 17540 32288 "POST /api/v1/auth/register/ HTTP/1.1" 201 508
+INFO 2025-10-16 00:14:49,169 basehttp 17540 11604 "POST /api/v1/auth/login/ HTTP/1.1" 200 965
+INFO 2025-10-16 00:14:49,214 basehttp 17540 29440 "GET /api/v1/auth/user-menus/ HTTP/1.1" 200 2184
+INFO 2025-10-16 00:14:49,610 basehttp 17540 33172 "POST /api/v1/auth/register/ HTTP/1.1" 201 520
+INFO 2025-10-16 00:14:49,990 basehttp 17540 33120 "POST /api/v1/auth/login/ HTTP/1.1" 200 977
+INFO 2025-10-16 00:14:50,031 basehttp 17540 27260 "GET /api/v1/auth/user-menus/ HTTP/1.1" 200 2231
+INFO 2025-10-16 00:16:45,162 autoreload 17540 29080 E:\corrosion_platform\backend\apps\users\serializers.py changed, reloading.
+INFO 2025-10-16 00:16:45,297 autoreload 29028 6816 E:\corrosion_platform\backend\apps\users\serializers.py changed, reloading.
+INFO 2025-10-16 00:16:46,204 autoreload 34488 34104 Watching for file changes with StatReloader
+INFO 2025-10-16 00:16:47,212 autoreload 34336 23744 Watching for file changes with StatReloader
+INFO 2025-10-16 00:32:48,158 basehttp 34488 37024 "POST /api/v1/auth/register/ HTTP/1.1" 201 468
+INFO 2025-10-16 00:33:00,230 basehttp 34488 37800 "POST /api/v1/auth/login/ HTTP/1.1" 200 925
+INFO 2025-10-16 00:33:00,271 basehttp 34488 29340 "GET /api/v1/auth/user-menus/ HTTP/1.1" 200 2184
+WARNING 2025-10-16 00:38:36,625 log 34488 36896 Bad Request: /api/v1/auth/login/
+WARNING 2025-10-16 00:38:36,627 basehttp 34488 36896 "POST /api/v1/auth/login/ HTTP/1.1" 400 49
+INFO 2025-10-16 00:38:55,618 basehttp 34488 37076 "POST /api/v1/auth/login/ HTTP/1.1" 200 961
+INFO 2025-10-16 00:38:55,655 basehttp 34488 37160 "GET /api/v1/info-plaza/posts/ HTTP/1.1" 200 52
+INFO 2025-10-16 00:39:21,370 basehttp 34488 35796 "POST /api/v1/auth/login/ HTTP/1.1" 200 961
+INFO 2025-10-16 00:39:21,414 basehttp 34488 33768 "GET /api/v1/info-plaza/posts/ HTTP/1.1" 200 2141
+INFO 2025-10-16 00:39:21,438 basehttp 34488 28940 "POST /api/v1/info-plaza/posts/3/like/ HTTP/1.1" 200 39
+INFO 2025-10-16 00:39:21,469 basehttp 34488 33096 "GET /api/v1/info-plaza/posts/3/ HTTP/1.1" 200 838
+INFO 2025-10-16 00:39:21,494 basehttp 34488 37268 "POST /api/v1/info-plaza/posts/3/like/ HTTP/1.1" 200 40
+INFO 2025-10-16 00:39:21,521 basehttp 34488 17704 "GET /api/v1/info-plaza/posts/3/ HTTP/1.1" 200 839
+INFO 2025-10-16 00:39:21,542 basehttp 34488 31560 "POST /api/v1/info-plaza/posts/3/like/ HTTP/1.1" 200 39
+INFO 2025-10-16 01:16:59,568 basehttp 34488 36420 "GET /api/v1/auth/profile/ HTTP/1.1" 200 434
+INFO 2025-10-16 01:16:59,639 basehttp 34488 37788 "GET /api/v1/auth/user-menus/ HTTP/1.1" 200 2184
+WARNING 2025-10-16 01:17:05,169 log 34488 31412 Unauthorized: /api/v1/info-plaza/posts/
+WARNING 2025-10-16 01:17:05,171 basehttp 34488 31412 "GET /api/v1/info-plaza/posts/?ordering=-published_at HTTP/1.1" 401 179
+INFO 2025-10-16 01:17:17,336 basehttp 34488 28764 "POST /api/v1/auth/login/ HTTP/1.1" 200 925
+INFO 2025-10-16 01:17:17,373 basehttp 34488 33000 "GET /api/v1/auth/user-menus/ HTTP/1.1" 200 2184
+INFO 2025-10-16 01:17:20,442 basehttp 34488 34696 "GET /api/v1/info-plaza/posts/?ordering=-published_at HTTP/1.1" 200 2141
+INFO 2025-10-16 01:17:23,050 basehttp 34488 30328 "POST /api/v1/info-plaza/posts/3/like/ HTTP/1.1" 200 39
+INFO 2025-10-16 01:17:23,926 basehttp 34488 32504 "POST /api/v1/info-plaza/posts/3/like/ HTTP/1.1" 200 40
+INFO 2025-10-16 01:17:24,739 basehttp 34488 21392 "POST /api/v1/info-plaza/posts/3/like/ HTTP/1.1" 200 39
+INFO 2025-10-16 01:17:25,170 basehttp 34488 33676 "POST /api/v1/info-plaza/posts/3/like/ HTTP/1.1" 200 40
+INFO 2025-10-16 01:17:25,756 basehttp 34488 35708 "POST /api/v1/info-plaza/posts/3/like/ HTTP/1.1" 200 39
+INFO 2025-10-16 01:17:26,238 basehttp 34488 28792 "POST /api/v1/info-plaza/posts/3/like/ HTTP/1.1" 200 40
+INFO 2025-10-16 01:17:27,504 basehttp 34488 33624 "POST /api/v1/info-plaza/posts/2/like/ HTTP/1.1" 200 39
+INFO 2025-10-16 01:17:27,977 basehttp 34488 35924 "POST /api/v1/info-plaza/posts/2/like/ HTTP/1.1" 200 40
+INFO 2025-10-16 01:17:28,827 basehttp 34488 35680 "POST /api/v1/info-plaza/posts/1/like/ HTTP/1.1" 200 39
+INFO 2025-10-16 01:17:29,201 basehttp 34488 33828 "POST /api/v1/info-plaza/posts/1/like/ HTTP/1.1" 200 40
+INFO 2025-10-16 01:17:30,022 basehttp 34488 33484 "GET /api/v1/info-plaza/posts/3/ HTTP/1.1" 200 839
+INFO 2025-10-16 01:17:30,055 basehttp 34488 33120 "GET /api/v1/info-plaza/comments/?post=3 HTTP/1.1" 200 52
+INFO 2025-10-16 01:17:30,814 basehttp 34488 36584 "POST /api/v1/info-plaza/posts/3/like/ HTTP/1.1" 200 39
+INFO 2025-10-16 01:17:31,342 basehttp 34488 32916 "POST /api/v1/info-plaza/posts/3/like/ HTTP/1.1" 200 40
+INFO 2025-10-16 01:17:32,077 basehttp 34488 33784 "POST /api/v1/info-plaza/posts/3/like/ HTTP/1.1" 200 39
+INFO 2025-10-16 01:17:32,680 basehttp 34488 35420 "GET /api/v1/info-plaza/posts/?ordering=-published_at HTTP/1.1" 200 2140
+INFO 2025-10-16 01:17:33,434 basehttp 34488 34360 "POST /api/v1/info-plaza/posts/3/like/ HTTP/1.1" 200 40
+INFO 2025-10-16 01:17:34,466 basehttp 34488 31972 "GET /api/v1/info-plaza/posts/3/ HTTP/1.1" 200 839
+INFO 2025-10-16 01:17:34,493 basehttp 34488 34896 "GET /api/v1/info-plaza/comments/?post=3 HTTP/1.1" 200 52
+INFO 2025-10-16 08:16:30,711 autoreload 25340 25332 Watching for file changes with StatReloader
+INFO 2025-10-16 08:17:28,045 basehttp 25340 12472 "GET /api/v1/auth/profile/ HTTP/1.1" 200 432
+INFO 2025-10-16 08:17:28,199 basehttp 25340 4928 "GET /api/v1/auth/user-menus/ HTTP/1.1" 200 2184
+INFO 2025-10-16 08:26:11,169 autoreload 25340 25332 E:\corrosion_platform\backend\apps\persons\serializers.py changed, reloading.
+INFO 2025-10-16 08:26:13,577 autoreload 23556 19024 Watching for file changes with StatReloader
+INFO 2025-10-16 08:31:01,579 autoreload 23556 19024 E:\corrosion_platform\backend\apps\persons\serializers.py changed, reloading.
+INFO 2025-10-16 08:31:04,130 autoreload 20556 25332 Watching for file changes with StatReloader
+WARNING 2025-10-16 08:33:20,912 log 20556 8180 Unauthorized: /api/v1/auth/logout/
+WARNING 2025-10-16 08:33:20,914 basehttp 20556 8180 "POST /api/v1/auth/logout/ HTTP/1.1" 401 179
+WARNING 2025-10-16 08:33:29,716 log 20556 5932 Bad Request: /api/v1/auth/login/
+WARNING 2025-10-16 08:33:29,718 basehttp 20556 5932 "POST /api/v1/auth/login/ HTTP/1.1" 400 49
+INFO 2025-10-16 08:34:01,490 basehttp 20556 20076 "POST /api/v1/auth/login/ HTTP/1.1" 200 925
+INFO 2025-10-16 08:34:01,548 basehttp 20556 24208 "GET /api/v1/auth/user-menus/ HTTP/1.1" 200 2184
+INFO 2025-10-16 08:35:13,740 basehttp 20556 17280 "GET /api/v1/info-plaza/posts/?ordering=-published_at HTTP/1.1" 200 2141
+INFO 2025-10-16 08:35:15,445 basehttp 20556 3092 "GET /api/v1/info-plaza/posts/3/ HTTP/1.1" 200 839
+INFO 2025-10-16 08:35:15,497 basehttp 20556 16560 "GET /api/v1/info-plaza/comments/?post=3 HTTP/1.1" 200 52
+INFO 2025-10-16 08:37:21,149 basehttp 20556 7048 "GET /api/v1/auth/profile/ HTTP/1.1" 200 434
+INFO 2025-10-16 08:37:21,339 basehttp 20556 10452 "GET /api/v1/auth/user-menus/ HTTP/1.1" 200 2184
+WARNING 2025-10-16 08:45:34,935 log 20556 22052 Unauthorized: /api/v1/auth/logout/
+WARNING 2025-10-16 08:45:34,937 basehttp 20556 22052 "POST /api/v1/auth/logout/ HTTP/1.1" 401 179
+WARNING 2025-10-16 09:21:18,558 log 20556 1808 Not Found: /api/v1/dashboard/statistics/
+WARNING 2025-10-16 09:21:18,559 log 20556 2528 Not Found: /api/v1/dashboard/activities/
+WARNING 2025-10-16 09:21:18,561 log 20556 4972 Not Found: /api/v1/dashboard/tasks/
+WARNING 2025-10-16 09:21:18,563 log 20556 13080 Not Found: /api/v1/dashboard/notifications/
+WARNING 2025-10-16 09:21:18,565 basehttp 20556 1808 "GET /api/v1/dashboard/statistics/ HTTP/1.1" 404 3502
+WARNING 2025-10-16 09:21:18,566 basehttp 20556 2528 "GET /api/v1/dashboard/activities/ HTTP/1.1" 404 3502
+WARNING 2025-10-16 09:21:18,567 basehttp 20556 4972 "GET /api/v1/dashboard/tasks/ HTTP/1.1" 404 3487
+WARNING 2025-10-16 09:21:18,568 basehttp 20556 13080 "GET /api/v1/dashboard/notifications/ HTTP/1.1" 404 3511
+WARNING 2025-10-16 09:26:08,034 log 20556 24736 Not Found: /api/v1/dashboard/statistics/
+WARNING 2025-10-16 09:26:08,036 log 20556 3268 Not Found: /api/v1/dashboard/activities/
+WARNING 2025-10-16 09:26:08,038 log 20556 3780 Not Found: /api/v1/dashboard/tasks/
+WARNING 2025-10-16 09:26:08,042 log 20556 16756 Not Found: /api/v1/dashboard/notifications/
+WARNING 2025-10-16 09:26:08,043 basehttp 20556 24736 "GET /api/v1/dashboard/statistics/ HTTP/1.1" 404 3502
+WARNING 2025-10-16 09:26:08,044 basehttp 20556 3268 "GET /api/v1/dashboard/activities/ HTTP/1.1" 404 3502
+WARNING 2025-10-16 09:26:08,045 basehttp 20556 3780 "GET /api/v1/dashboard/tasks/ HTTP/1.1" 404 3487
+WARNING 2025-10-16 09:26:08,046 basehttp 20556 16756 "GET /api/v1/dashboard/notifications/ HTTP/1.1" 404 3511
+INFO 2025-10-16 09:28:58,123 autoreload 17552 22704 Watching for file changes with StatReloader
+WARNING 2025-10-16 09:30:34,132 log 17552 15216 Not Found: /api/v1/dashboard/statistics/
+WARNING 2025-10-16 09:30:34,134 log 17552 17220 Not Found: /api/v1/dashboard/activities/
+WARNING 2025-10-16 09:30:34,135 log 17552 13248 Not Found: /api/v1/dashboard/notifications/
+WARNING 2025-10-16 09:30:34,137 log 17552 22176 Not Found: /api/v1/dashboard/tasks/
+WARNING 2025-10-16 09:30:34,139 basehttp 17552 15216 "GET /api/v1/dashboard/statistics/ HTTP/1.1" 404 3502
+WARNING 2025-10-16 09:30:34,140 basehttp 17552 17220 "GET /api/v1/dashboard/activities/ HTTP/1.1" 404 3502
+WARNING 2025-10-16 09:30:34,141 basehttp 17552 13248 "GET /api/v1/dashboard/notifications/ HTTP/1.1" 404 3511
+WARNING 2025-10-16 09:30:34,143 basehttp 17552 22176 "GET /api/v1/dashboard/tasks/ HTTP/1.1" 404 3487
+WARNING 2025-10-16 09:30:42,852 log 17552 20164 Not Found: /api/v1/dashboard/statistics/
+WARNING 2025-10-16 09:30:42,856 log 17552 1892 Not Found: /api/v1/dashboard/activities/
+WARNING 2025-10-16 09:30:42,856 basehttp 17552 20164 "GET /api/v1/dashboard/statistics/ HTTP/1.1" 404 3502
+WARNING 2025-10-16 09:30:42,860 log 17552 1888 Not Found: /api/v1/dashboard/tasks/
+WARNING 2025-10-16 09:30:42,861 basehttp 17552 1892 "GET /api/v1/dashboard/activities/ HTTP/1.1" 404 3502
+WARNING 2025-10-16 09:30:42,863 basehttp 17552 1888 "GET /api/v1/dashboard/tasks/ HTTP/1.1" 404 3487
+WARNING 2025-10-16 09:30:42,916 log 17552 20404 Not Found: /api/v1/dashboard/notifications/
+WARNING 2025-10-16 09:30:42,918 basehttp 17552 20404 "GET /api/v1/dashboard/notifications/ HTTP/1.1" 404 3511
+WARNING 2025-10-16 09:32:07,080 log 17552 3316 Not Found: /api/v1/dashboard/tasks/
+WARNING 2025-10-16 09:32:07,082 log 17552 22952 Not Found: /api/v1/dashboard/activities/
+WARNING 2025-10-16 09:32:07,085 log 17552 25292 Not Found: /api/v1/dashboard/notifications/
+WARNING 2025-10-16 09:32:07,087 log 17552 14932 Not Found: /api/v1/dashboard/statistics/
+WARNING 2025-10-16 09:32:07,088 basehttp 17552 3316 "GET /api/v1/dashboard/tasks/ HTTP/1.1" 404 3487
+WARNING 2025-10-16 09:32:07,090 basehttp 17552 22952 "GET /api/v1/dashboard/activities/ HTTP/1.1" 404 3502
+WARNING 2025-10-16 09:32:07,091 basehttp 17552 25292 "GET /api/v1/dashboard/notifications/ HTTP/1.1" 404 3511
+WARNING 2025-10-16 09:32:07,092 basehttp 17552 14932 "GET /api/v1/dashboard/statistics/ HTTP/1.1" 404 3502
+INFO 2025-10-16 09:34:30,211 autoreload 17552 22704 E:\corrosion_platform\backend\config\urls.py changed, reloading.
+INFO 2025-10-16 09:34:32,760 autoreload 12960 16576 Watching for file changes with StatReloader
+INFO 2025-10-16 09:38:28,450 autoreload 25104 18672 Watching for file changes with StatReloader
+WARNING 2025-10-16 09:40:24,873 log 25104 13608 Unauthorized: /api/v1/dashboard/statistics/
+WARNING 2025-10-16 09:40:24,874 log 25104 7636 Unauthorized: /api/v1/dashboard/tasks/
+WARNING 2025-10-16 09:40:24,876 log 25104 4196 Unauthorized: /api/v1/dashboard/activities/
+WARNING 2025-10-16 09:40:24,877 log 25104 25184 Unauthorized: /api/v1/dashboard/notifications/
+WARNING 2025-10-16 09:40:24,879 basehttp 25104 13608 "GET /api/v1/dashboard/statistics/ HTTP/1.1" 401 179
+WARNING 2025-10-16 09:40:24,879 basehttp 25104 7636 "GET /api/v1/dashboard/tasks/ HTTP/1.1" 401 179
+WARNING 2025-10-16 09:40:24,882 basehttp 25104 4196 "GET /api/v1/dashboard/activities/ HTTP/1.1" 401 179
+WARNING 2025-10-16 09:40:24,884 basehttp 25104 25184 "GET /api/v1/dashboard/notifications/ HTTP/1.1" 401 179
+WARNING 2025-10-16 09:41:11,562 log 25104 9184 Unauthorized: /api/v1/dashboard/statistics/
+WARNING 2025-10-16 09:41:11,576 log 25104 21036 Unauthorized: /api/v1/dashboard/activities/
+WARNING 2025-10-16 09:41:11,583 log 25104 23780 Unauthorized: /api/v1/dashboard/tasks/
+WARNING 2025-10-16 09:41:11,589 log 25104 22680 Unauthorized: /api/v1/dashboard/notifications/
+WARNING 2025-10-16 09:41:11,592 basehttp 25104 9184 "GET /api/v1/dashboard/statistics/ HTTP/1.1" 401 179
+WARNING 2025-10-16 09:41:11,594 basehttp 25104 21036 "GET /api/v1/dashboard/activities/ HTTP/1.1" 401 179
+WARNING 2025-10-16 09:41:11,599 basehttp 25104 23780 "GET /api/v1/dashboard/tasks/ HTTP/1.1" 401 179
+WARNING 2025-10-16 09:41:11,602 basehttp 25104 22680 "GET /api/v1/dashboard/notifications/ HTTP/1.1" 401 179
+WARNING 2025-10-16 09:41:23,033 log 25104 16048 Unauthorized: /api/v1/dashboard/statistics/
+WARNING 2025-10-16 09:41:23,036 log 25104 24032 Unauthorized: /api/v1/dashboard/activities/
+WARNING 2025-10-16 09:41:23,039 basehttp 25104 16048 "GET /api/v1/dashboard/statistics/ HTTP/1.1" 401 179
+WARNING 2025-10-16 09:41:23,042 basehttp 25104 24032 "GET /api/v1/dashboard/activities/ HTTP/1.1" 401 179
+WARNING 2025-10-16 09:41:23,089 log 25104 22860 Unauthorized: /api/v1/dashboard/tasks/
+WARNING 2025-10-16 09:41:23,098 log 25104 11148 Unauthorized: /api/v1/dashboard/notifications/
+WARNING 2025-10-16 09:41:23,100 basehttp 25104 22860 "GET /api/v1/dashboard/tasks/ HTTP/1.1" 401 179
+WARNING 2025-10-16 09:41:23,118 basehttp 25104 11148 "GET /api/v1/dashboard/notifications/ HTTP/1.1" 401 179
+WARNING 2025-10-16 09:45:05,268 log 25104 16508 Unauthorized: /api/v1/dashboard/statistics/
+WARNING 2025-10-16 09:45:05,273 log 25104 7988 Unauthorized: /api/v1/dashboard/activities/
+WARNING 2025-10-16 09:45:05,273 basehttp 25104 16508 "GET /api/v1/dashboard/statistics/ HTTP/1.1" 401 179
+WARNING 2025-10-16 09:45:05,275 basehttp 25104 7988 "GET /api/v1/dashboard/activities/ HTTP/1.1" 401 179
+WARNING 2025-10-16 09:45:05,283 log 25104 22660 Unauthorized: /api/v1/dashboard/tasks/
+WARNING 2025-10-16 09:45:05,288 log 25104 24028 Unauthorized: /api/v1/dashboard/notifications/
+WARNING 2025-10-16 09:45:05,290 basehttp 25104 22660 "GET /api/v1/dashboard/tasks/ HTTP/1.1" 401 179
+WARNING 2025-10-16 09:45:05,292 basehttp 25104 24028 "GET /api/v1/dashboard/notifications/ HTTP/1.1" 401 179
+WARNING 2025-10-16 09:45:49,994 log 25104 4120 Unauthorized: /api/v1/auth/users/
+WARNING 2025-10-16 09:45:49,997 basehttp 25104 4120 "GET /api/v1/auth/users/ HTTP/1.1" 401 179
+WARNING 2025-10-16 09:47:56,228 log 25104 1312 Unauthorized: /api/v1/dashboard/statistics/
+WARNING 2025-10-16 09:47:56,232 log 25104 16652 Unauthorized: /api/v1/dashboard/activities/
+WARNING 2025-10-16 09:47:56,238 log 25104 19508 Unauthorized: /api/v1/dashboard/tasks/
+WARNING 2025-10-16 09:47:56,244 log 25104 3488 Unauthorized: /api/v1/dashboard/notifications/
+WARNING 2025-10-16 09:47:56,246 basehttp 25104 1312 "GET /api/v1/dashboard/statistics/ HTTP/1.1" 401 179
+WARNING 2025-10-16 09:47:56,251 basehttp 25104 16652 "GET /api/v1/dashboard/activities/ HTTP/1.1" 401 179
+WARNING 2025-10-16 09:47:56,252 basehttp 25104 19508 "GET /api/v1/dashboard/tasks/ HTTP/1.1" 401 179
+WARNING 2025-10-16 09:47:56,258 basehttp 25104 3488 "GET /api/v1/dashboard/notifications/ HTTP/1.1" 401 179
+INFO 2025-10-16 09:48:27,926 basehttp 25104 10588 "POST /api/v1/auth/register/ HTTP/1.1" 201 460
+INFO 2025-10-16 09:48:35,289 basehttp 25104 22920 "POST /api/v1/auth/login/ HTTP/1.1" 200 920
+INFO 2025-10-16 09:48:35,346 basehttp 25104 25016 "GET /api/v1/auth/user-menus/ HTTP/1.1" 200 2184
+INFO 2025-10-16 09:58:44,021 basehttp 25104 16564 "GET /api/v1/dashboard/statistics/ HTTP/1.1" 200 48
+INFO 2025-10-16 09:58:44,045 basehttp 25104 21764 "GET /api/v1/dashboard/activities/ HTTP/1.1" 200 136
+INFO 2025-10-16 09:58:44,059 basehttp 25104 4516 "GET /api/v1/dashboard/tasks/ HTTP/1.1" 200 93
+INFO 2025-10-16 09:58:44,076 basehttp 25104 23432 "GET /api/v1/dashboard/notifications/ HTTP/1.1" 200 105
+INFO 2025-10-16 09:59:02,493 basehttp 25104 2208 "GET /api/v1/info-plaza/posts/?ordering=-published_at HTTP/1.1" 200 2141
+INFO 2025-10-16 09:59:15,181 basehttp 25104 11856 "GET /api/v1/info-plaza/posts/?ordering=-published_at HTTP/1.1" 200 2141
+INFO 2025-10-16 09:59:16,417 basehttp 25104 24420 "POST /api/v1/info-plaza/posts/3/like/ HTTP/1.1" 200 39
+INFO 2025-10-16 09:59:17,139 basehttp 25104 7360 "POST /api/v1/info-plaza/posts/3/like/ HTTP/1.1" 200 40
+INFO 2025-10-21 08:25:53,363 autoreload 24956 19324 Watching for file changes with StatReloader
+INFO 2025-10-21 08:27:08,728 autoreload 2948 24892 Watching for file changes with StatReloader
+WARNING 2025-10-21 08:27:16,447 log 2948 13992 Unauthorized: /api/v1/auth/profile/
+WARNING 2025-10-21 08:27:16,449 basehttp 2948 13992 "GET /api/v1/auth/profile/ HTTP/1.1" 401 179
+WARNING 2025-10-21 08:27:16,478 log 2948 21972 Unauthorized: /api/v1/auth/profile/
+WARNING 2025-10-21 08:27:16,482 basehttp 2948 21972 "GET /api/v1/auth/profile/ HTTP/1.1" 401 179
+INFO 2025-10-21 08:27:16,486 basehttp 2948 4952 "POST /api/v1/auth/token/refresh/ HTTP/1.1" 200 486
+INFO 2025-10-21 08:27:16,594 basehttp 2948 26288 "GET /api/v1/auth/profile/ HTTP/1.1" 200 426
+INFO 2025-10-21 08:27:16,632 basehttp 2948 25820 "GET /api/v1/auth/profile/ HTTP/1.1" 200 426
+INFO 2025-10-21 08:27:16,698 basehttp 2948 15272 "GET /api/v1/auth/user-menus/ HTTP/1.1" 200 2184
+INFO 2025-10-21 08:27:16,757 basehttp 2948 4652 "GET /api/v1/auth/user-menus/ HTTP/1.1" 200 2184
+INFO 2025-10-21 08:27:17,594 basehttp 2948 12480 "GET /api/v1/dashboard/statistics/ HTTP/1.1" 200 48
+INFO 2025-10-21 08:27:17,595 basehttp 2948 12672 "GET /api/v1/dashboard/activities/ HTTP/1.1" 200 136
+INFO 2025-10-21 08:27:17,596 basehttp 2948 24676 "GET /api/v1/dashboard/tasks/ HTTP/1.1" 200 93
+INFO 2025-10-21 08:27:17,596 basehttp 2948 5336 "GET /api/v1/dashboard/notifications/ HTTP/1.1" 200 105
+WARNING 2025-10-21 08:27:23,959 log 2948 25056 Bad Request: /api/v1/auth/logout/
+WARNING 2025-10-21 08:27:23,960 basehttp 2948 25056 "POST /api/v1/auth/logout/ HTTP/1.1" 400 24
+WARNING 2025-10-21 08:27:28,808 log 2948 26484 Unauthorized: /api/v1/auth/users/
+WARNING 2025-10-21 08:27:28,810 basehttp 2948 26484 "GET /api/v1/auth/users/ HTTP/1.1" 401 179
