@@ -129,7 +129,7 @@
           <div class="card">
             <div class="card-header">
               <h3>最近活动</h3>
-              <el-link type="primary">查看全部</el-link>
+              <el-link type="primary" @click="viewAllActivities">查看全部</el-link>
             </div>
             <div class="activity-list">
               <div class="activity-item" v-for="activity in recentActivities" :key="activity.id">
@@ -170,7 +170,7 @@
                 <el-icon><List /></el-icon>
                 项目进度
               </h3>
-              <el-link type="primary">查看全部</el-link>
+              <el-link type="primary" @click="viewAllProjects">查看全部</el-link>
             </div>
             <div class="progress-list">
               <div class="progress-item" v-for="project in projectProgress" :key="project.id">
@@ -205,7 +205,7 @@
             <div class="card-header">
               <h3>待办事项</h3>
               <el-badge :value="pendingTasks.length" class="badge">
-                <el-link type="primary">查看全部</el-link>
+                <el-link type="primary" @click="viewAllTasks">查看全部</el-link>
               </el-badge>
             </div>
             <div class="todo-list">
@@ -227,7 +227,7 @@
           <div class="card">
             <div class="card-header">
               <h3>系统通知</h3>
-              <el-link type="primary">查看全部</el-link>
+              <el-link type="primary" @click="viewAllNotifications">查看全部</el-link>
             </div>
             <div class="notification-list">
               <div class="notification-item" v-for="notification in notifications" :key="notification.id">
@@ -583,6 +583,40 @@ const getPriorityType = (priority) => {
     '低': 'info'
   }
   return types[priority] || 'info'
+}
+
+// 查看全部功能
+const viewAllActivities = () => {
+  ElMessage.info('活动历史功能开发中')
+  // TODO: 跳转到活动历史页面
+  // router.push('/dashboard/activities')
+}
+
+const viewAllProjects = () => {
+  if (userStore.user?.user_type === 'enterprise') {
+    router.push('/dashboard/enterprise/projects')
+  } else if (userStore.user?.user_type === 'personal') {
+    router.push('/dashboard/personal/projects')
+  } else {
+    ElMessage.info('请先完善用户信息')
+  }
+}
+
+const viewAllTasks = () => {
+  if (userStore.user?.user_type === 'enterprise') {
+    ElMessage.info('企业用户请在项目管理中查看任务')
+    router.push('/dashboard/enterprise/projects')
+  } else if (userStore.user?.user_type === 'personal') {
+    router.push('/dashboard/personal/tasks')
+  } else {
+    ElMessage.info('请先完善用户信息')
+  }
+}
+
+const viewAllNotifications = () => {
+  ElMessage.info('通知中心功能开发中')
+  // TODO: 跳转到通知中心页面
+  // router.push('/dashboard/notifications')
 }
 
 // 加载仪表板数据

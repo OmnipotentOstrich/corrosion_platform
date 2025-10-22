@@ -57,6 +57,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 系统日志中间件
+    'apps.system.middleware.SystemLogMiddleware',
+    'apps.system.middleware.PerformanceLogMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'

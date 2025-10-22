@@ -385,6 +385,13 @@ export const useUserStore = defineStore('user', () => {
         children: [
           {
             id: 41,
+            name: '信息列表',
+            code: 'info-list',
+            url: '/dashboard/info-plaza',
+            icon: 'List'
+          },
+          {
+            id: 42,
             name: '发布信息',
             code: 'info-publish',
             url: '/dashboard/info-plaza/publish',
@@ -401,6 +408,13 @@ export const useUserStore = defineStore('user', () => {
         children: [
           {
             id: 51,
+            name: '资源列表',
+            code: 'resource-list',
+            url: '/dashboard/resources',
+            icon: 'List'
+          },
+          {
+            id: 52,
             name: '添加资源',
             code: 'resource-add',
             url: '/dashboard/resources/add',
@@ -435,6 +449,27 @@ export const useUserStore = defineStore('user', () => {
             code: 'system-logs',
             url: '/dashboard/system/logs',
             icon: 'Document'
+          },
+          {
+            id: 64,
+            name: '系统配置',
+            code: 'system-configs',
+            url: '/dashboard/system/configs',
+            icon: 'Setting'
+          },
+          {
+            id: 65,
+            name: '系统备份',
+            code: 'system-backups',
+            url: '/dashboard/system/backups',
+            icon: 'FolderOpened'
+          },
+          {
+            id: 66,
+            name: '系统监控',
+            code: 'system-monitor',
+            url: '/dashboard/system/monitor',
+            icon: 'Monitor'
           }
         ]
       }
@@ -491,6 +526,13 @@ export const useUserStore = defineStore('user', () => {
         children: [
           {
             id: 31,
+            name: '信息列表',
+            code: 'info-list',
+            url: '/dashboard/info-plaza',
+            icon: 'List'
+          },
+          {
+            id: 32,
             name: '发布信息',
             code: 'info-publish',
             url: '/dashboard/info-plaza/publish',
@@ -507,6 +549,13 @@ export const useUserStore = defineStore('user', () => {
         children: [
           {
             id: 41,
+            name: '资源列表',
+            code: 'resource-list',
+            url: '/dashboard/resources',
+            icon: 'List'
+          },
+          {
+            id: 42,
             name: '添加资源',
             code: 'resource-add',
             url: '/dashboard/resources/add',
@@ -557,7 +606,22 @@ export const useUserStore = defineStore('user', () => {
         code: 'info-plaza',
         url: '/dashboard/info-plaza',
         icon: 'Message',
-        children: []
+        children: [
+          {
+            id: 31,
+            name: '信息列表',
+            code: 'info-list',
+            url: '/dashboard/info-plaza',
+            icon: 'List'
+          },
+          {
+            id: 32,
+            name: '发布信息',
+            code: 'info-publish',
+            url: '/dashboard/info-plaza/publish',
+            icon: 'Edit'
+          }
+        ]
       },
       {
         id: 4,
@@ -565,7 +629,22 @@ export const useUserStore = defineStore('user', () => {
         code: 'resources',
         url: '/dashboard/resources',
         icon: 'Folder',
-        children: []
+        children: [
+          {
+            id: 41,
+            name: '资源列表',
+            code: 'resource-list',
+            url: '/dashboard/resources',
+            icon: 'List'
+          },
+          {
+            id: 42,
+            name: '添加资源',
+            code: 'resource-add',
+            url: '/dashboard/resources/add',
+            icon: 'Plus'
+          }
+        ]
       }
     ]
   }

@@ -62,15 +62,49 @@
           <i class="fas fa-cog"></i>
         </div>
         <div class="card-content">
-          <h3>系统设置</h3>
-          <p>配置系统参数和基本设置</p>
+          <h3>系统配置</h3>
+          <p>管理系统配置项和参数设置</p>
           <div class="card-stats">
             <span>配置项: {{ stats.configItems }}</span>
             <span>最后更新: {{ stats.lastUpdate }}</span>
           </div>
-          <button class="btn btn-primary" @click="openSettings">
-            系统设置
-          </button>
+          <router-link to="/dashboard/system/configs" class="btn btn-primary">
+            配置管理
+          </router-link>
+        </div>
+      </div>
+      
+      <div class="management-card">
+        <div class="card-icon">
+          <i class="fas fa-database"></i>
+        </div>
+        <div class="card-content">
+          <h3>系统备份</h3>
+          <p>创建和管理系统数据备份</p>
+          <div class="card-stats">
+            <span>备份数量: {{ stats.totalBackups }}</span>
+            <span>最新备份: {{ stats.lastBackup }}</span>
+          </div>
+          <router-link to="/dashboard/system/backups" class="btn btn-primary">
+            备份管理
+          </router-link>
+        </div>
+      </div>
+      
+      <div class="management-card">
+        <div class="card-icon">
+          <i class="fas fa-tachometer-alt"></i>
+        </div>
+        <div class="card-content">
+          <h3>系统监控</h3>
+          <p>实时监控系统资源和性能</p>
+          <div class="card-stats">
+            <span>CPU: {{ stats.cpuUsage }}%</span>
+            <span>内存: {{ stats.memoryUsage }}%</span>
+          </div>
+          <router-link to="/dashboard/system/monitor" class="btn btn-primary">
+            查看监控
+          </router-link>
         </div>
       </div>
     </div>
@@ -116,7 +150,11 @@ const stats = ref({
   lastUpdate: '-',
   totalProjects: 0,
   totalResources: 0,
-  totalInfos: 0
+  totalInfos: 0,
+  totalBackups: 0,
+  lastBackup: '-',
+  cpuUsage: 0,
+  memoryUsage: 0
 })
 
 // 加载系统统计数据
@@ -136,17 +174,17 @@ const loadSystemStats = async () => {
         lastUpdate: response.data.last_update || '-',
         totalProjects: response.data.total_projects || 0,
         totalResources: response.data.total_resources || 0,
-        totalInfos: response.data.total_infos || 0
+        totalInfos: response.data.total_infos || 0,
+        totalBackups: response.data.total_backups || 0,
+        lastBackup: response.data.last_backup || '-',
+        cpuUsage: response.data.cpu_usage || 0,
+        memoryUsage: response.data.memory_usage || 0
       }
     }
   } catch (error) {
     console.error('加载系统统计数据失败:', error)
     // 如果API调用失败，使用默认值
   }
-}
-
-const openSettings = () => {
-  ElMessage.info('系统设置功能开发中...')
 }
 
 onMounted(() => {

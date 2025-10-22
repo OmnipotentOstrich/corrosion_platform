@@ -145,6 +145,24 @@ const routes = [
         name: 'SystemLogs',
         component: () => import('@/views/system/Logs.vue'),
         meta: { title: '系统日志' }
+      },
+      {
+        path: 'system/configs',
+        name: 'SystemConfigs',
+        component: () => import('@/views/system/Configs.vue'),
+        meta: { title: '系统配置' }
+      },
+      {
+        path: 'system/backups',
+        name: 'SystemBackups',
+        component: () => import('@/views/system/Backups.vue'),
+        meta: { title: '系统备份' }
+      },
+      {
+        path: 'system/monitor',
+        name: 'SystemMonitor',
+        component: () => import('@/views/system/Monitor.vue'),
+        meta: { title: '系统监控' }
       }
     ]
   },

@@ -744,6 +744,7 @@ export default {
 <style scoped>
 .enterprise-employees {
   padding: 20px;
+  background: #f5f5f5;
 }
 
 .page-header {
@@ -751,6 +752,13 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
+}
+
+.page-header h1 {
+  color: #333;
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
 }
 
 .form-header {
@@ -766,11 +774,6 @@ export default {
   margin: 0;
   color: #333;
   font-weight: 500;
-}
-
-.page-header h1 {
-  color: #333;
-  margin: 0;
 }
 
 .filters {
@@ -866,5 +869,6 @@ th {
   padding: 4px 8px;
   font-size: 12px;
 }
+
 </style>
 
