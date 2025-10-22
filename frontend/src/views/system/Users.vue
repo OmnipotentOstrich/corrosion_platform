@@ -15,17 +15,21 @@
         v-model="searchQuery" 
         placeholder="搜索用户..."
         class="search-input"
+        @input="debouncedSearch"
       >
-      <select v-model="roleFilter" class="filter-select">
+      <select v-model="roleFilter" class="filter-select" @change="loadUsers">
         <option value="">全部角色</option>
         <option value="admin">管理员</option>
-        <option value="manager">经理</option>
-        <option value="user">普通用户</option>
+        <option value="enterprise_admin">企业管理员</option>
+        <option value="enterprise_employee">企业员工</option>
+        <option value="project_manager">项目经理</option>
+        <option value="personal_user">个人用户</option>
+        <option value="technician">技术员</option>
+        <option value="engineer">工程师</option>
       </select>
-      <select v-model="statusFilter" class="filter-select">
+      <select v-model="statusFilter" class="filter-select" @change="loadUsers">
         <option value="">全部状态</option>
         <option value="active">活跃</option>
-        <option value="inactive">非活跃</option>
         <option value="banned">已禁用</option>
       </select>
     </div>
@@ -44,7 +48,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="user in filteredUsers" :key="user.id">
+          <tr v-for="user in users" :key="user.id">
             <td>
               <div class="user-info">
                 <div class="avatar">{{ user.username.charAt(0).toUpperCase() }}</div>
@@ -53,13 +57,13 @@
             </td>
             <td>{{ user.email }}</td>
             <td>
-              <span class="role" :class="user.role">{{ user.roleText }}</span>
+              <span class="role" :class="getRoleClass(user.roles)">{{ user.role_text }}</span>
             </td>
             <td>
-              <span class="status" :class="user.status">{{ user.statusText }}</span>
+              <span class="status" :class="user.status">{{ user.status_text }}</span>
             </td>
-            <td>{{ user.registerTime }}</td>
-            <td>{{ user.lastLogin }}</td>
+            <td>{{ user.register_time }}</td>
+            <td>{{ user.last_login }}</td>
             <td>
               <button class="btn btn-sm btn-outline" @click="viewUser(user)">
                 查看
@@ -70,7 +74,7 @@
               <button 
                 class="btn btn-sm btn-danger" 
                 @click="toggleUserStatus(user)"
-                v-if="user.status !== 'banned'"
+                v-if="user.is_active"
               >
                 禁用
               </button>
@@ -85,6 +89,39 @@
           </tr>
         </tbody>
       </table>
+      
+      <!-- 分页组件 -->
+      <div class="pagination" v-if="totalPages > 1">
+        <button 
+          class="btn btn-outline" 
+          :disabled="currentPage === 1"
+          @click="goToPage(currentPage - 1)"
+        >
+          上一页
+        </button>
+        
+        <span class="page-info">
+          第 {{ currentPage }} 页，共 {{ totalPages }} 页
+        </span>
+        
+        <button 
+          class="btn btn-outline" 
+          :disabled="currentPage === totalPages"
+          @click="goToPage(currentPage + 1)"
+        >
+          下一页
+        </button>
+        
+        <div class="page-size-selector">
+          <label>每页显示：</label>
+          <select v-model="pageSize" @change="changePageSize">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -101,73 +138,128 @@ export default {
       roleFilter: '',
       statusFilter: '',
       users: [],
-      loading: false
+      loading: false,
+      // 分页相关
+      currentPage: 1,
+      pageSize: 20,
+      totalCount: 0,
+      totalPages: 0,
+      // 防抖搜索
+      searchTimeout: null
     }
   },
   mounted() {
     this.loadUsers()
   },
-  watch: {
-    searchQuery() {
-      this.loadUsers()
-    },
-    roleFilter() {
-      this.loadUsers()
-    },
-    statusFilter() {
-      this.loadUsers()
-    }
-  },
-  computed: {
-    filteredUsers() {
-      return this.users.filter(user => {
-        const matchesSearch = user.username.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                             user.email.toLowerCase().includes(this.searchQuery.toLowerCase())
-        const matchesRole = !this.roleFilter || user.role === this.roleFilter
-        const matchesStatus = !this.statusFilter || user.status === this.statusFilter
-        return matchesSearch && matchesRole && matchesStatus
-      })
-    }
-  },
   methods: {
     async loadUsers() {
       try {
         this.loading = true
-        const params = {}
-        if (this.searchQuery) params.search = this.searchQuery
-        if (this.roleFilter) params.role = this.roleFilter
-        if (this.statusFilter) params.status = this.statusFilter
+        const params = {
+          page: this.currentPage,
+          page_size: this.pageSize
+        }
         
-        const response = await api.get('/auth/users/', { params }).catch(() => ({ data: [] }))
-        this.users = (response.data.results || response.data).map(user => ({
-          ...user,
-          roleText: this.getRoleText(user.role || 'user'),
-          statusText: this.getStatusText(user.status || 'active')
+        if (this.searchQuery) params.search = this.searchQuery
+        if (this.statusFilter) params.is_active = this.statusFilter === 'active'
+        
+        const response = await api.get('/auth/users/', { params }).catch(() => ({ 
+          data: { 
+            results: [], 
+            count: 0, 
+            total_pages: 0 
+          } 
         }))
+        
+        const data = response.data
+        this.users = (data.results || data).map(user => ({
+          ...user,
+          role_text: user.role_text || this.getRoleText(user.roles),
+          status_text: user.status_text || this.getStatusText(user.is_active)
+        }))
+        
+        // 更新分页信息
+        this.totalCount = data.count || 0
+        this.totalPages = data.total_pages || Math.ceil(this.totalCount / this.pageSize)
+        
+        // 如果当前页超过总页数，重置到第一页
+        if (this.currentPage > this.totalPages && this.totalPages > 0) {
+          this.currentPage = 1
+          this.loadUsers()
+        }
       } catch (error) {
         console.error('加载用户列表失败:', error)
         this.users = []
+        this.totalCount = 0
+        this.totalPages = 0
       } finally {
         this.loading = false
       }
     },
     
-    getRoleText(role) {
-      const roleMap = {
-        'admin': '管理员',
-        'manager': '经理',
-        'user': '普通用户'
+    debouncedSearch() {
+      if (this.searchTimeout) {
+        clearTimeout(this.searchTimeout)
       }
-      return roleMap[role] || role
+      this.searchTimeout = setTimeout(() => {
+        this.currentPage = 1
+        this.loadUsers()
+      }, 500)
     },
     
-    getStatusText(status) {
-      const statusMap = {
-        'active': '活跃',
-        'inactive': '非活跃',
-        'banned': '已禁用'
+    goToPage(page) {
+      if (page >= 1 && page <= this.totalPages) {
+        this.currentPage = page
+        this.loadUsers()
       }
-      return statusMap[status] || status
+    },
+    
+    changePageSize() {
+      // 确保pageSize是数字类型
+      this.pageSize = parseInt(this.pageSize)
+      this.currentPage = 1
+      this.loadUsers()
+    },
+    
+    getRoleClass(roles) {
+      if (!roles || roles.length === 0) return 'user'
+      const roleCode = roles[0].code
+      const roleMap = {
+        'admin': 'admin',
+        'enterprise_admin': 'manager',
+        'enterprise_employee': 'user',
+        'project_manager': 'manager',
+        'personal_user': 'user',
+        'technician': 'user',
+        'engineer': 'manager'
+      }
+      return roleMap[roleCode] || 'user'
+    },
+    
+    getRoleText(roles) {
+      if (!roles || roles.length === 0) return '普通用户'
+      const role = roles[0]
+      const roleMap = {
+        'admin': '管理员',
+        'enterprise_admin': '企业管理员',
+        'enterprise_employee': '企业员工',
+        'project_manager': '项目经理',
+        'quality_supervisor': '质量监督员',
+        'safety_manager': '安全管理员',
+        'material_manager': '材料管理员',
+        'personal_user': '个人用户',
+        'technician': '技术员',
+        'engineer': '工程师',
+        'construction_worker': '建筑工人',
+        'labor_worker': '劳务工人',
+        'industry_consultant': '行业顾问',
+        'industry_expert': '行业专家'
+      }
+      return roleMap[role.code] || role.name
+    },
+    
+    getStatusText(isActive) {
+      return isActive ? '活跃' : '已禁用'
     },
     
     async addUser() {
@@ -194,21 +286,23 @@ export default {
         }
       }
     },
+    
     viewUser(user) {
       ElMessageBox.alert(`
         <div style="text-align: left;">
           <h3>${user.username}</h3>
           <p><strong>邮箱：</strong>${user.email}</p>
-          <p><strong>角色：</strong>${user.roleText}</p>
-          <p><strong>状态：</strong>${user.statusText}</p>
-          <p><strong>注册时间：</strong>${user.registerTime}</p>
-          <p><strong>最后登录：</strong>${user.lastLogin}</p>
+          <p><strong>角色：</strong>${user.role_text}</p>
+          <p><strong>状态：</strong>${user.status_text}</p>
+          <p><strong>注册时间：</strong>${user.register_time}</p>
+          <p><strong>最后登录：</strong>${user.last_login}</p>
         </div>
       `, '用户详情', {
         dangerouslyUseHTMLString: true,
         confirmButtonText: '关闭'
       })
     },
+    
     editUser(user) {
       ElMessageBox.prompt(`编辑用户 - ${user.username}`, '编辑用户', {
         confirmButtonText: '保存',
@@ -216,16 +310,24 @@ export default {
         inputValue: user.email,
         inputPattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
         inputErrorMessage: '请输入正确的邮箱地址'
-      }).then(({ value }) => {
-        user.email = value
-        ElMessage.success('用户信息已更新')
-        // TODO: 调用后端API更新用户信息
+      }).then(async ({ value }) => {
+        try {
+          await api.patch(`/auth/users/${user.id}/`, {
+            email: value
+          })
+          ElMessage.success('用户信息已更新')
+          this.loadUsers()
+        } catch (error) {
+          console.error('更新用户信息失败:', error)
+          ElMessage.error('更新用户信息失败')
+        }
       }).catch(() => {
         ElMessage.info('已取消')
       })
     },
+    
     async toggleUserStatus(user) {
-      const action = user.status === 'banned' ? '启用' : '禁用'
+      const action = user.is_active ? '禁用' : '启用'
       try {
         await ElMessageBox.confirm(`确定要${action}用户 ${user.username} 吗？`, '确认操作', {
           confirmButtonText: '确定',
@@ -233,9 +335,8 @@ export default {
           type: 'warning'
         })
         
-        const newStatus = user.status === 'banned' ? 'active' : 'banned'
-        await api.patch(`/auth/users/${user.id}/`, {
-          is_active: newStatus === 'active'
+        await api.patch(`/auth/users/${user.id}/status/`, {
+          is_active: !user.is_active
         })
         
         ElMessage.success(`用户已${action}`)
@@ -418,5 +519,49 @@ th {
   padding: 4px 8px;
   font-size: 12px;
 }
-</style>
 
+/* 分页样式 */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.page-info {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.page-size-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-size-selector label {
+  font-size: 14px;
+  color: #666;
+}
+
+.page-size-selector select {
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn:disabled:hover {
+  background-color: inherit;
+  color: inherit;
+}
+</style>

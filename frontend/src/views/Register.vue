@@ -53,10 +53,33 @@
           @submit.prevent="handleRegister"
         >
           <el-form-item prop="user_type">
-            <el-radio-group v-model="registerForm.user_type" size="large">
+            <el-radio-group v-model="registerForm.user_type" size="large" @change="handleUserTypeChange">
               <el-radio-button label="personal">个人用户</el-radio-button>
               <el-radio-button label="enterprise">企业用户</el-radio-button>
             </el-radio-group>
+          </el-form-item>
+          
+          <el-form-item prop="role_id">
+            <el-select
+              v-model="registerForm.role_id"
+              placeholder="请选择您的角色"
+              size="large"
+              style="width: 100%"
+              :loading="rolesLoading"
+              @focus="loadRoles"
+            >
+              <el-option
+                v-for="role in availableRoles"
+                :key="role.id"
+                :label="role.name"
+                :value="role.id"
+              >
+                <div class="role-option">
+                  <span class="role-name">{{ role.name }}</span>
+                  <span class="role-description">{{ role.description }}</span>
+                </div>
+              </el-option>
+            </el-select>
           </el-form-item>
           
           <el-form-item prop="username">
@@ -141,7 +164,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { ElMessage } from 'element-plus'
@@ -155,6 +178,10 @@ const registerFormRef = ref()
 
 // 加载状态
 const loading = ref(false)
+const rolesLoading = ref(false)
+
+// 可用角色列表
+const availableRoles = ref([])
 
 // 注册表单数据
 const registerForm = reactive({
@@ -164,13 +191,17 @@ const registerForm = reactive({
   phone: '',
   password: '',
   password_confirm: '',
-  first_name: ''
+  first_name: '',
+  role_id: null
 })
 
 // 表单验证规则
 const registerRules = {
   user_type: [
     { required: true, message: '请选择用户类型', trigger: 'change' }
+  ],
+  role_id: [
+    { required: true, message: '请选择您的角色', trigger: 'change' }
   ],
   username: [
     { required: true, message: '请输入用户名', trigger: 'blur' },
@@ -207,6 +238,29 @@ const registerRules = {
   ]
 }
 
+// 加载角色列表
+const loadRoles = async () => {
+  if (availableRoles.value.length > 0) return
+  
+  try {
+    rolesLoading.value = true
+    const roles = await userStore.getAvailableRoles(registerForm.user_type)
+    availableRoles.value = roles
+  } catch (error) {
+    console.error('加载角色列表失败:', error)
+    ElMessage.error('加载角色列表失败')
+  } finally {
+    rolesLoading.value = false
+  }
+}
+
+// 处理用户类型变化
+const handleUserTypeChange = () => {
+  // 清空角色选择
+  registerForm.role_id = null
+  availableRoles.value = []
+}
+
 // 处理注册
 const handleRegister = async () => {
   if (!registerFormRef.value) return
@@ -228,6 +282,7 @@ const handleRegister = async () => {
       registerForm.phone = ''
       registerForm.password = ''
       registerForm.password_confirm = ''
+      registerForm.role_id = null
       
       // 跳转到登录页面
       setTimeout(() => {
@@ -242,6 +297,11 @@ const handleRegister = async () => {
     loading.value = false
   }
 }
+
+// 组件挂载时加载角色列表
+onMounted(() => {
+  loadRoles()
+})
 </script>
 
 <style lang="scss" scoped>
@@ -483,6 +543,30 @@ const handleRegister = async () => {
               }
             }
           }
+          
+          :deep(.el-select) {
+            .el-input__wrapper {
+              border-radius: 12px;
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+              border: 2px solid transparent;
+              transition: all 0.3s ease;
+              
+              &:hover {
+                border-color: #667eea;
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+              }
+              
+              &.is-focus {
+                border-color: #667eea;
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+              }
+            }
+            
+            .el-input__inner {
+              font-size: 16px;
+              padding: 12px 16px;
+            }
+          }
         }
         
         .register-btn {
@@ -517,6 +601,24 @@ const handleRegister = async () => {
         }
       }
     }
+  }
+}
+
+// 角色选项样式
+.role-option {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  
+  .role-name {
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .role-description {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.4;
   }
 }
 

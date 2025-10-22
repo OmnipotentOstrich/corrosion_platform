@@ -2,7 +2,8 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import (
     SystemConfig, SystemLog, SystemStatistics, SystemNotification,
-    SystemBackup, SystemMonitor
+    SystemBackup, SystemMonitor, SystemSecurityLog, SystemPageConfig,
+    SystemAnalytics, SystemMaintenance
 )
 
 User = get_user_model()
@@ -110,6 +111,69 @@ class SystemMonitorSerializer(serializers.ModelSerializer):
             'status', 'extra_data', 'created_at'
         ]
         read_only_fields = ['id', 'created_at']
+
+
+class SystemSecurityLogSerializer(serializers.ModelSerializer):
+    """系统安全日志序列化器"""
+    security_type_display = serializers.CharField(source='get_security_type_display', read_only=True)
+    risk_level_display = serializers.CharField(source='get_risk_level_display', read_only=True)
+    user_name = serializers.CharField(source='user.username', read_only=True)
+    resolved_by_name = serializers.CharField(source='resolved_by.username', read_only=True)
+    
+    class Meta:
+        model = SystemSecurityLog
+        fields = [
+            'id', 'security_type', 'security_type_display', 'user', 'user_name',
+            'ip_address', 'user_agent', 'description', 'risk_level', 'risk_level_display',
+            'is_resolved', 'resolved_by', 'resolved_by_name', 'resolved_at',
+            'extra_data', 'created_at'
+        ]
+        read_only_fields = ['id', 'created_at']
+
+
+class SystemPageConfigSerializer(serializers.ModelSerializer):
+    """系统页面配置序列化器"""
+    page_type_display = serializers.CharField(source='get_page_type_display', read_only=True)
+    
+    class Meta:
+        model = SystemPageConfig
+        fields = [
+            'id', 'page_name', 'page_type', 'page_type_display', 'title',
+            'description', 'keywords', 'layout_config', 'theme_config',
+            'custom_css', 'custom_js', 'is_active', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class SystemAnalyticsSerializer(serializers.ModelSerializer):
+    """系统数据分析序列化器"""
+    analytics_type_display = serializers.CharField(source='get_analytics_type_display', read_only=True)
+    
+    class Meta:
+        model = SystemAnalytics
+        fields = [
+            'id', 'analytics_type', 'analytics_type_display', 'metric_name',
+            'metric_value', 'dimension_data', 'time_period', 'analysis_date',
+            'extra_data', 'created_at'
+        ]
+        read_only_fields = ['id', 'created_at']
+
+
+class SystemMaintenanceSerializer(serializers.ModelSerializer):
+    """系统维护序列化器"""
+    maintenance_type_display = serializers.CharField(source='get_maintenance_type_display', read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    created_by_name = serializers.CharField(source='created_by.username', read_only=True)
+    
+    class Meta:
+        model = SystemMaintenance
+        fields = [
+            'id', 'maintenance_type', 'maintenance_type_display', 'title',
+            'description', 'status', 'status_display', 'scheduled_start',
+            'scheduled_end', 'actual_start', 'actual_end', 'affected_services',
+            'created_by', 'created_by_name', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_by', 'created_at', 'updated_at']
 
 
 class DashboardStatisticsSerializer(serializers.Serializer):

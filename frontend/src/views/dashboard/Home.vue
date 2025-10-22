@@ -368,40 +368,159 @@ const notifications = ref([])
 const chartOption = ref({
   title: {
     text: '数据趋势',
-    left: 'center'
+    left: 'center',
+    textStyle: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: '#303133'
+    }
   },
   tooltip: {
-    trigger: 'axis'
+    trigger: 'axis',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderColor: '#ddd',
+    borderWidth: 1,
+    textStyle: {
+      color: '#333'
+    },
+    formatter: function(params) {
+      let result = `<div style="font-weight: bold; margin-bottom: 8px;">${params[0].axisValue}</div>`
+      params.forEach(param => {
+        result += `<div style="margin: 4px 0;">
+          <span style="display: inline-block; width: 10px; height: 10px; background-color: ${param.color}; border-radius: 50%; margin-right: 8px;"></span>
+          ${param.seriesName}: <span style="font-weight: bold; color: ${param.color};">${param.value}</span>
+        </div>`
+      })
+      return result
+    }
   },
   legend: {
     data: ['信息发布', '资源添加', '项目完成'],
-    bottom: 0
+    bottom: 0,
+    textStyle: {
+      fontSize: 12
+    }
+  },
+  grid: {
+    left: '3%',
+    right: '4%',
+    bottom: '15%',
+    top: '15%',
+    containLabel: true
   },
   xAxis: {
     type: 'category',
-    data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+    data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+    axisLine: {
+      lineStyle: {
+        color: '#e4e7ed'
+      }
+    },
+    axisTick: {
+      alignWithLabel: true
+    }
   },
   yAxis: {
-    type: 'value'
+    type: 'value',
+    axisLine: {
+      lineStyle: {
+        color: '#e4e7ed'
+      }
+    },
+    splitLine: {
+      lineStyle: {
+        color: '#f0f2f5',
+        type: 'dashed'
+      }
+    }
   },
   series: [
     {
       name: '信息发布',
       type: 'line',
       data: [5, 8, 3, 7, 4, 6, 2],
-      smooth: true
+      smooth: true,
+      symbol: 'circle',
+      symbolSize: 6,
+      lineStyle: {
+        width: 3,
+        color: '#409eff'
+      },
+      itemStyle: {
+        color: '#409eff'
+      },
+      areaStyle: {
+        color: {
+          type: 'linear',
+          x: 0,
+          y: 0,
+          x2: 0,
+          y2: 1,
+          colorStops: [{
+            offset: 0, color: 'rgba(64, 158, 255, 0.3)'
+          }, {
+            offset: 1, color: 'rgba(64, 158, 255, 0.05)'
+          }]
+        }
+      }
     },
     {
       name: '资源添加',
       type: 'line',
       data: [2, 4, 1, 3, 2, 5, 1],
-      smooth: true
+      smooth: true,
+      symbol: 'circle',
+      symbolSize: 6,
+      lineStyle: {
+        width: 3,
+        color: '#67c23a'
+      },
+      itemStyle: {
+        color: '#67c23a'
+      },
+      areaStyle: {
+        color: {
+          type: 'linear',
+          x: 0,
+          y: 0,
+          x2: 0,
+          y2: 1,
+          colorStops: [{
+            offset: 0, color: 'rgba(103, 194, 58, 0.3)'
+          }, {
+            offset: 1, color: 'rgba(103, 194, 58, 0.05)'
+          }]
+        }
+      }
     },
     {
       name: '项目完成',
       type: 'line',
       data: [1, 2, 0, 1, 3, 1, 0],
-      smooth: true
+      smooth: true,
+      symbol: 'circle',
+      symbolSize: 6,
+      lineStyle: {
+        width: 3,
+        color: '#e6a23c'
+      },
+      itemStyle: {
+        color: '#e6a23c'
+      },
+      areaStyle: {
+        color: {
+          type: 'linear',
+          x: 0,
+          y: 0,
+          x2: 0,
+          y2: 1,
+          colorStops: [{
+            offset: 0, color: 'rgba(230, 162, 60, 0.3)'
+          }, {
+            offset: 1, color: 'rgba(230, 162, 60, 0.05)'
+          }]
+        }
+      }
     }
   ]
 })
@@ -589,9 +708,26 @@ const loadChartData = async () => {
       chartOption.value.series[0].data = response.data.datasets.posts
       chartOption.value.series[1].data = response.data.datasets.resources
       chartOption.value.series[2].data = response.data.datasets.projects
+      
+      // 如果有元数据，动态调整Y轴最大值
+      if (response.data.metadata && response.data.metadata.max_value > 0) {
+        const maxValue = response.data.metadata.max_value
+        chartOption.value.yAxis.max = Math.ceil(maxValue * 1.2) // 留出20%的余量
+      }
+      
+      console.log('图表数据加载成功:', {
+        period: response.data.metadata?.period,
+        user_type: response.data.metadata?.user_type,
+        totals: {
+          posts: response.data.metadata?.total_posts,
+          resources: response.data.metadata?.total_resources,
+          projects: response.data.metadata?.total_projects
+        }
+      })
     }
   } catch (error) {
     console.error('加载图表数据失败:', error)
+    ElMessage.error('加载图表数据失败')
   }
 }
 

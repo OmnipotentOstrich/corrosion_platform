@@ -206,6 +206,8 @@ class SystemMonitor(models.Model):
         ('network', '网络流量'),
         ('database', '数据库连接'),
         ('api', 'API响应时间'),
+        ('security', '安全监控'),
+        ('performance', '性能监控'),
     ]
     
     monitor_type = models.CharField(max_length=20, choices=MONITOR_TYPE_CHOICES, verbose_name='监控类型')
@@ -229,3 +231,153 @@ class SystemMonitor(models.Model):
     
     def __str__(self):
         return f"{self.get_monitor_type_display()} - {self.metric_name} - {self.metric_value}"
+
+
+class SystemSecurityLog(models.Model):
+    """系统安全日志"""
+    SECURITY_TYPE_CHOICES = [
+        ('login_failure', '登录失败'),
+        ('unauthorized_access', '未授权访问'),
+        ('suspicious_activity', '可疑活动'),
+        ('password_change', '密码修改'),
+        ('permission_change', '权限变更'),
+        ('data_export', '数据导出'),
+        ('system_config_change', '系统配置变更'),
+        ('other', '其他'),
+    ]
+    
+    security_type = models.CharField(max_length=30, choices=SECURITY_TYPE_CHOICES, verbose_name='安全类型')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='用户')
+    ip_address = models.GenericIPAddressField(verbose_name='IP地址')
+    user_agent = models.TextField(verbose_name='用户代理')
+    description = models.TextField(verbose_name='描述')
+    risk_level = models.CharField(max_length=10, choices=[('low', '低'), ('medium', '中'), ('high', '高'), ('critical', '严重')], verbose_name='风险等级')
+    is_resolved = models.BooleanField(default=False, verbose_name='是否已解决')
+    resolved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='resolved_security_logs', verbose_name='解决人')
+    resolved_at = models.DateTimeField(null=True, blank=True, verbose_name='解决时间')
+    extra_data = models.JSONField(null=True, blank=True, verbose_name='额外数据')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    
+    class Meta:
+        db_table = 'system_security_logs'
+        verbose_name = '系统安全日志'
+        verbose_name_plural = '系统安全日志'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['security_type', 'created_at']),
+            models.Index(fields=['risk_level', 'created_at']),
+            models.Index(fields=['is_resolved', 'created_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.get_security_type_display()} - {self.description[:50]}"
+
+
+class SystemPageConfig(models.Model):
+    """系统页面配置"""
+    PAGE_TYPE_CHOICES = [
+        ('home', '首页'),
+        ('dashboard', '仪表板'),
+        ('login', '登录页'),
+        ('register', '注册页'),
+        ('profile', '个人中心'),
+        ('admin', '管理后台'),
+        ('custom', '自定义页面'),
+    ]
+    
+    page_name = models.CharField(max_length=100, unique=True, verbose_name='页面名称')
+    page_type = models.CharField(max_length=20, choices=PAGE_TYPE_CHOICES, verbose_name='页面类型')
+    title = models.CharField(max_length=200, verbose_name='页面标题')
+    description = models.TextField(blank=True, verbose_name='页面描述')
+    keywords = models.CharField(max_length=500, blank=True, verbose_name='关键词')
+    layout_config = models.JSONField(null=True, blank=True, verbose_name='布局配置')
+    theme_config = models.JSONField(null=True, blank=True, verbose_name='主题配置')
+    custom_css = models.TextField(blank=True, verbose_name='自定义CSS')
+    custom_js = models.TextField(blank=True, verbose_name='自定义JS')
+    is_active = models.BooleanField(default=True, verbose_name='是否启用')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    
+    class Meta:
+        db_table = 'system_page_configs'
+        verbose_name = '系统页面配置'
+        verbose_name_plural = '系统页面配置'
+        ordering = ['page_name']
+    
+    def __str__(self):
+        return f"{self.page_name} ({self.get_page_type_display()})"
+
+
+class SystemAnalytics(models.Model):
+    """系统数据分析"""
+    ANALYTICS_TYPE_CHOICES = [
+        ('user_behavior', '用户行为'),
+        ('page_views', '页面访问'),
+        ('api_usage', 'API使用'),
+        ('performance', '性能分析'),
+        ('business', '业务分析'),
+        ('security', '安全分析'),
+    ]
+    
+    analytics_type = models.CharField(max_length=20, choices=ANALYTICS_TYPE_CHOICES, verbose_name='分析类型')
+    metric_name = models.CharField(max_length=100, verbose_name='指标名称')
+    metric_value = models.DecimalField(max_digits=15, decimal_places=2, verbose_name='指标值')
+    dimension_data = models.JSONField(null=True, blank=True, verbose_name='维度数据')
+    time_period = models.CharField(max_length=20, verbose_name='时间周期')
+    analysis_date = models.DateField(verbose_name='分析日期')
+    extra_data = models.JSONField(null=True, blank=True, verbose_name='额外数据')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    
+    class Meta:
+        db_table = 'system_analytics'
+        verbose_name = '系统数据分析'
+        verbose_name_plural = '系统数据分析'
+        ordering = ['-analysis_date', '-created_at']
+        indexes = [
+            models.Index(fields=['analytics_type', 'analysis_date']),
+            models.Index(fields=['metric_name', 'analysis_date']),
+        ]
+    
+    def __str__(self):
+        return f"{self.get_analytics_type_display()} - {self.metric_name} - {self.analysis_date}"
+
+
+class SystemMaintenance(models.Model):
+    """系统维护"""
+    MAINTENANCE_TYPE_CHOICES = [
+        ('scheduled', '计划维护'),
+        ('emergency', '紧急维护'),
+        ('update', '系统更新'),
+        ('backup', '数据备份'),
+        ('cleanup', '数据清理'),
+        ('other', '其他'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('planned', '计划中'),
+        ('in_progress', '进行中'),
+        ('completed', '已完成'),
+        ('cancelled', '已取消'),
+    ]
+    
+    maintenance_type = models.CharField(max_length=20, choices=MAINTENANCE_TYPE_CHOICES, verbose_name='维护类型')
+    title = models.CharField(max_length=200, verbose_name='维护标题')
+    description = models.TextField(verbose_name='维护描述')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='planned', verbose_name='状态')
+    scheduled_start = models.DateTimeField(verbose_name='计划开始时间')
+    scheduled_end = models.DateTimeField(verbose_name='计划结束时间')
+    actual_start = models.DateTimeField(null=True, blank=True, verbose_name='实际开始时间')
+    actual_end = models.DateTimeField(null=True, blank=True, verbose_name='实际结束时间')
+    affected_services = models.JSONField(null=True, blank=True, verbose_name='受影响服务')
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='创建人')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    
+    class Meta:
+        db_table = 'system_maintenance'
+        verbose_name = '系统维护'
+        verbose_name_plural = '系统维护'
+        ordering = ['-scheduled_start']
+    
+    def __str__(self):
+        return f"{self.title} ({self.get_status_display()})"

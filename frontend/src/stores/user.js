@@ -205,6 +205,19 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
+  // 获取可选择的角色列表
+  const getAvailableRoles = async (userType = 'personal') => {
+    try {
+      const response = await api.get('/auth/available-roles/', {
+        params: { user_type: userType }
+      })
+      return response.data
+    } catch (error) {
+      console.error('获取角色列表失败:', error)
+      return []
+    }
+  }
+
   // 刷新token
   const refreshAccessToken = async () => {
     try {
@@ -520,6 +533,7 @@ export const useUserStore = defineStore('user', () => {
     updateProfile,
     changePassword,
     getUserMenus,
+    getAvailableRoles,
     refreshAccessToken,
     hasPermission,
     hasMenu,
