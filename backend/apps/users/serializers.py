@@ -14,10 +14,10 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'username', 'email', 'first_name', 'last_name',
             'user_type', 'user_type_display', 'phone', 'avatar',
-            'is_verified', 'is_active', 'date_joined', 'created_at',
-            'updated_at', 'roles'
+            'is_verified', 'is_active', 'is_staff', 'is_superuser',
+            'date_joined', 'created_at', 'updated_at', 'roles'
         ]
-        read_only_fields = ['id', 'date_joined', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'date_joined', 'created_at', 'updated_at', 'is_staff', 'is_superuser']
     
     def get_roles(self, obj):
         """获取用户角色"""

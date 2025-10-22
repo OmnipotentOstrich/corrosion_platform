@@ -109,16 +109,29 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     first_name = serializers.CharField(write_only=True, required=False)
     last_name = serializers.CharField(write_only=True, required=False)
+    enterprise_id = serializers.IntegerField(write_only=True, required=False)
     
     class Meta:
         model = Employee
         fields = [
             'username', 'email', 'phone', 'password', 'first_name', 'last_name',
-            'employee_id', 'position', 'department', 'hire_date', 'salary'
+            'employee_id', 'position', 'department', 'hire_date', 'salary', 'enterprise_id'
         ]
     
     def create(self, validated_data):
-        enterprise = self.context['enterprise']
+        # 从context或validated_data获取企业
+        enterprise = self.context.get('enterprise')
+        enterprise_id = validated_data.pop('enterprise_id', None)
+        
+        if not enterprise and enterprise_id:
+            # 管理员指定企业ID
+            try:
+                enterprise = Enterprise.objects.get(id=enterprise_id)
+            except Enterprise.DoesNotExist:
+                raise serializers.ValidationError({'enterprise_id': '企业不存在'})
+        
+        if not enterprise:
+            raise serializers.ValidationError({'enterprise': '必须指定企业'})
         
         # 创建用户
         user_data = {

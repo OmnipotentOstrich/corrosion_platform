@@ -69,13 +69,10 @@ def register_view(request):
 @permission_classes([permissions.IsAuthenticated])
 def logout_view(request):
     """登出视图"""
-    try:
-        refresh_token = request.data["refresh"]
-        token = RefreshToken(refresh_token)
-        token.blacklist()
-        return Response({'message': '登出成功'}, status=status.HTTP_205_RESET_CONTENT)
-    except Exception as e:
-        return Response({'error': '登出失败'}, status=status.HTTP_400_BAD_REQUEST)
+    # JWT是无状态的，实际的token失效由前端删除token完成
+    # 这里只是返回成功响应，让前端清除本地存储的token
+    # 如果需要token黑名单功能，需要安装并配置 rest_framework_simplejwt.token_blacklist
+    return Response({'message': '登出成功'}, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])

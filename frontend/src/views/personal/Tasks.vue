@@ -3,63 +3,69 @@
     <div class="page-header">
       <h1>我的任务</h1>
       <div class="header-actions">
-        <button class="btn btn-primary" @click="createTask">
+        <el-button type="primary" @click="createTask">
           创建任务
-        </button>
+        </el-button>
       </div>
     </div>
     
     <div class="filters">
-      <input 
-        type="text" 
+      <el-input 
         v-model="searchQuery" 
         placeholder="搜索任务..."
-        class="search-input"
-      >
-      <select v-model="statusFilter" class="filter-select">
-        <option value="">全部状态</option>
-        <option value="pending">待处理</option>
-        <option value="in-progress">进行中</option>
-        <option value="completed">已完成</option>
-        <option value="cancelled">已取消</option>
-      </select>
-      <select v-model="priorityFilter" class="filter-select">
-        <option value="">全部优先级</option>
-        <option value="high">高</option>
-        <option value="medium">中</option>
-        <option value="low">低</option>
-      </select>
+        clearable
+        style="max-width: 300px"
+      />
+      <el-select v-model="statusFilter" placeholder="全部状态" clearable style="width: 150px">
+        <el-option label="待处理" value="pending" />
+        <el-option label="进行中" value="in_progress" />
+        <el-option label="已完成" value="completed" />
+        <el-option label="已取消" value="cancelled" />
+      </el-select>
+      <el-select v-model="priorityFilter" placeholder="全部优先级" clearable style="width: 150px">
+        <el-option label="高" value="high" />
+        <el-option label="中" value="medium" />
+        <el-option label="低" value="low" />
+      </el-select>
     </div>
     
-    <div class="tasks-list">
+    <div v-loading="loading" class="tasks-list">
+      <div v-if="filteredTasks.length === 0" class="empty-state">
+        <p>暂无任务数据</p>
+      </div>
       <div v-for="task in filteredTasks" :key="task.id" class="task-card">
         <div class="task-header">
           <h3>{{ task.title }}</h3>
           <div class="task-badges">
-            <span class="priority" :class="task.priority">{{ task.priorityText }}</span>
-            <span class="status" :class="task.status">{{ task.statusText }}</span>
+            <el-tag :type="getPriorityType(task.priority)" size="small">
+              {{ getPriorityText(task.priority) }}
+            </el-tag>
+            <el-tag :type="getStatusType(task.status)" size="small">
+              {{ getStatusText(task.status) }}
+            </el-tag>
           </div>
         </div>
-        <p class="task-description">{{ task.description }}</p>
+        <p class="task-description">{{ task.description || '暂无描述' }}</p>
         <div class="task-meta">
-          <span>项目: {{ task.project }}</span>
+          <span v-if="task.project">项目: {{ task.project }}</span>
           <span>截止时间: {{ task.deadline }}</span>
           <span>创建时间: {{ task.createdAt }}</span>
         </div>
         <div class="task-actions">
-          <button 
+          <el-button 
             v-if="task.status !== 'completed'" 
-            class="btn btn-sm btn-success" 
+            type="success" 
+            size="small"
             @click="completeTask(task)"
           >
             完成
-          </button>
-          <button class="btn btn-sm btn-outline" @click="editTask(task)">
+          </el-button>
+          <el-button size="small" @click="editTask(task)">
             编辑
-          </button>
-          <button class="btn btn-sm btn-danger" @click="deleteTask(task)">
+          </el-button>
+          <el-button type="danger" size="small" @click="deleteTask(task)">
             删除
-          </button>
+          </el-button>
         </div>
       </div>
     </div>
@@ -93,14 +99,14 @@
         <el-form-item label="状态">
           <el-select v-model="editForm.status" placeholder="请选择状态">
             <el-option label="待处理" value="pending" />
-            <el-option label="进行中" value="in-progress" />
+            <el-option label="进行中" value="in_progress" />
             <el-option label="已完成" value="completed" />
             <el-option label="已取消" value="cancelled" />
           </el-select>
         </el-form-item>
         <el-form-item label="截止时间">
           <el-date-picker
-            v-model="editForm.deadline"
+            v-model="editForm.due_date"
             type="date"
             placeholder="选择日期"
             format="YYYY-MM-DD"
@@ -111,174 +117,219 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="cancelEdit">取消</el-button>
-          <el-button type="primary" @click="saveEdit">保存</el-button>
+          <el-button type="primary" :loading="saving" @click="saveEdit">保存</el-button>
         </span>
       </template>
     </el-dialog>
   </div>
 </template>
 
-<script>
-export default {
-  name: 'PersonalTasks',
-  data() {
-    return {
-      searchQuery: '',
-      statusFilter: '',
-      priorityFilter: '',
-      editDialogVisible: false,
-      editingTask: null,
-      editForm: {
-        title: '',
-        description: '',
-        priority: '',
-        status: '',
-        deadline: ''
-      },
-      tasks: [
-        {
-          id: 1,
-          title: '设计防腐方案',
-          description: '为工业设备设计防腐保温方案',
-          project: '防腐保温项目A',
-          priority: 'high',
-          priorityText: '高',
-          status: 'in-progress',
-          statusText: '进行中',
-          deadline: '2024-11-15',
-          createdAt: '2024-10-01'
-        },
-        {
-          id: 2,
-          title: '材料采购',
-          description: '采购防腐保温所需材料',
-          project: '管道维护项目B',
-          priority: 'medium',
-          priorityText: '中',
-          status: 'pending',
-          statusText: '待处理',
-          deadline: '2024-11-20',
-          createdAt: '2024-10-05'
-        },
-        {
-          id: 3,
-          title: '质量检测',
-          description: '对完成的防腐工程进行质量检测',
-          project: '设备检测项目C',
-          priority: 'high',
-          priorityText: '高',
-          status: 'completed',
-          statusText: '已完成',
-          deadline: '2024-10-30',
-          createdAt: '2024-09-20'
-        }
-      ]
-    }
-  },
-  computed: {
-    filteredTasks() {
-      let tasks = this.tasks.filter(task => {
-        const matchesSearch = task.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                             task.description.toLowerCase().includes(this.searchQuery.toLowerCase())
-        const matchesStatus = !this.statusFilter || task.status === this.statusFilter
-        const matchesPriority = !this.priorityFilter || task.priority === this.priorityFilter
-        return matchesSearch && matchesStatus && matchesPriority
-      })
-      
-      // 如果从项目页面跳转过来，过滤指定项目的任务
-      const projectName = this.$route.query.projectName
-      if (projectName) {
-        tasks = tasks.filter(task => task.project === projectName)
-      }
-      
-      return tasks
-    }
-  },
-  mounted() {
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import api from '@/api'
+import dayjs from 'dayjs'
+
+const route = useRoute()
+
+// 响应式数据
+const loading = ref(false)
+const saving = ref(false)
+const searchQuery = ref('')
+const statusFilter = ref('')
+const priorityFilter = ref('')
+const tasks = ref([])
+const editDialogVisible = ref(false)
+const editingTask = ref(null)
+const editForm = ref({
+  title: '',
+  description: '',
+  priority: 'medium',
+  status: 'pending',
+  due_date: ''
+})
+
+// 优先级映射
+const getPriorityText = (priority) => {
+  const map = { high: '高', medium: '中', low: '低' }
+  return map[priority] || priority
+}
+
+const getPriorityType = (priority) => {
+  const map = { high: 'danger', medium: 'warning', low: 'info' }
+  return map[priority] || ''
+}
+
+// 状态映射
+const getStatusText = (status) => {
+  const map = {
+    pending: '待处理',
+    in_progress: '进行中',
+    completed: '已完成',
+    cancelled: '已取消'
+  }
+  return map[status] || status
+}
+
+const getStatusType = (status) => {
+  const map = {
+    pending: 'info',
+    in_progress: 'primary',
+    completed: 'success',
+    cancelled: 'danger'
+  }
+  return map[status] || ''
+}
+
+// 格式化日期
+const formatDate = (date) => {
+  return date ? dayjs(date).format('YYYY-MM-DD') : '-'
+}
+
+// 过滤后的任务列表
+const filteredTasks = computed(() => {
+  let filtered = tasks.value.filter(task => {
+    const matchesSearch = !searchQuery.value || 
+      task.title?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      task.description?.toLowerCase().includes(searchQuery.value.toLowerCase())
+    const matchesStatus = !statusFilter.value || task.status === statusFilter.value
+    const matchesPriority = !priorityFilter.value || task.priority === priorityFilter.value
+    return matchesSearch && matchesStatus && matchesPriority
+  })
+  
+  // 如果从项目页面跳转过来，过滤指定项目的任务
+  const projectId = route.query.projectId
+  if (projectId) {
+    filtered = filtered.filter(task => task.project_id == projectId)
+  }
+  
+  return filtered
+})
+
+// 加载任务列表
+const loadTasks = async () => {
+  try {
+    loading.value = true
+    const response = await api.get('/persons/tasks/')
+    
+    const data = response.data.results || response.data || []
+    tasks.value = data.map(task => ({
+      id: task.id,
+      title: task.title || '未命名任务',
+      description: task.description || '',
+      project: task.project_name || task.project || '',
+      project_id: task.project_id || task.project,
+      priority: task.priority || 'medium',
+      status: task.status || 'pending',
+      deadline: formatDate(task.due_date || task.deadline),
+      createdAt: formatDate(task.created_at),
+      ...task
+    }))
+    
     // 如果从项目页面跳转过来，显示提示
-    const projectName = this.$route.query.projectName
+    const projectName = route.query.projectName
     if (projectName) {
-      this.$message.success(`已筛选项目"${projectName}"的任务`)
+      ElMessage.success(`已筛选项目"${projectName}"的任务`)
     }
-  },
-  methods: {
-    createTask() {
-      this.$message.info('创建任务功能开发中')
-    },
-    completeTask(task) {
-      this.$confirm('确认完成此任务？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'success'
-      }).then(() => {
-        task.status = 'completed'
-        task.statusText = '已完成'
-        this.$message.success('任务已完成')
-      }).catch(() => {
-        this.$message.info('已取消')
-      })
-    },
-    editTask(task) {
-      // 复制任务数据到编辑表单
-      this.editingTask = task
-      this.editForm = {
-        title: task.title,
-        description: task.description,
-        priority: task.priority,
-        status: task.status,
-        deadline: task.deadline
-      }
-      this.editDialogVisible = true
-    },
-    saveEdit() {
-      // 验证表单
-      if (!this.editForm.title || !this.editForm.description) {
-        this.$message.error('请填写完整信息')
-        return
-      }
-      
-      // 更新任务数据
-      this.editingTask.title = this.editForm.title
-      this.editingTask.description = this.editForm.description
-      this.editingTask.priority = this.editForm.priority
-      this.editingTask.status = this.editForm.status
-      this.editingTask.deadline = this.editForm.deadline
-      
-      // 更新显示文本
-      const priorityMap = { high: '高', medium: '中', low: '低' }
-      const statusMap = { 
-        pending: '待处理', 
-        'in-progress': '进行中', 
-        completed: '已完成', 
-        cancelled: '已取消' 
-      }
-      this.editingTask.priorityText = priorityMap[this.editForm.priority]
-      this.editingTask.statusText = statusMap[this.editForm.status]
-      
-      this.editDialogVisible = false
-      this.$message.success('任务更新成功')
-    },
-    cancelEdit() {
-      this.editDialogVisible = false
-      this.editingTask = null
-    },
-    deleteTask(task) {
-      this.$confirm('确认删除此任务？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        const index = this.tasks.findIndex(t => t.id === task.id)
-        if (index > -1) {
-          this.tasks.splice(index, 1)
-          this.$message.success('删除成功')
-        }
-      }).catch(() => {
-        this.$message.info('已取消删除')
-      })
+  } catch (error) {
+    console.error('加载任务列表失败:', error)
+    ElMessage.error('加载任务列表失败')
+    tasks.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
+// 创建任务
+const createTask = () => {
+  ElMessage.info('创建任务功能开发中')
+}
+
+// 完成任务
+const completeTask = async (task) => {
+  try {
+    await ElMessageBox.confirm('确认完成此任务？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'success'
+    })
+    
+    await api.post(`/persons/tasks/${task.id}/complete/`)
+    ElMessage.success('任务已完成')
+    loadTasks() // 刷新列表
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('完成任务失败:', error)
+      ElMessage.error('操作失败')
     }
   }
 }
+
+// 编辑任务
+const editTask = (task) => {
+  editingTask.value = task
+  editForm.value = {
+    title: task.title,
+    description: task.description,
+    priority: task.priority,
+    status: task.status,
+    due_date: task.due_date || task.deadline
+  }
+  editDialogVisible.value = true
+}
+
+// 保存编辑
+const saveEdit = async () => {
+  if (!editForm.value.title) {
+    ElMessage.error('请填写任务标题')
+    return
+  }
+  
+  try {
+    saving.value = true
+    await api.put(`/persons/tasks/${editingTask.value.id}/`, editForm.value)
+    ElMessage.success('任务更新成功')
+    editDialogVisible.value = false
+    loadTasks() // 刷新列表
+  } catch (error) {
+    console.error('更新任务失败:', error)
+    ElMessage.error('更新失败')
+  } finally {
+    saving.value = false
+  }
+}
+
+// 取消编辑
+const cancelEdit = () => {
+  editDialogVisible.value = false
+  editingTask.value = null
+}
+
+// 删除任务
+const deleteTask = async (task) => {
+  try {
+    await ElMessageBox.confirm('确认删除此任务？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    
+    await api.delete(`/persons/tasks/${task.id}/`)
+    ElMessage.success('删除成功')
+    loadTasks() // 刷新列表
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('删除任务失败:', error)
+      ElMessage.error('删除失败')
+    }
+  }
+}
+
+// 组件挂载时加载数据
+onMounted(() => {
+  loadTasks()
+})
 </script>
 
 <style scoped>
@@ -304,21 +355,16 @@ export default {
   margin-bottom: 20px;
 }
 
-.search-input, .filter-select {
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.search-input {
-  flex: 1;
-  max-width: 300px;
-}
-
 .tasks-list {
   display: grid;
   gap: 20px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+  font-size: 16px;
 }
 
 .task-card {
@@ -346,48 +392,6 @@ export default {
   gap: 8px;
 }
 
-.priority, .status {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.priority.high {
-  background-color: #f8d7da;
-  color: #721c24;
-}
-
-.priority.medium {
-  background-color: #fff3cd;
-  color: #856404;
-}
-
-.priority.low {
-  background-color: #d1ecf1;
-  color: #0c5460;
-}
-
-.status.pending {
-  background-color: #e2e3e5;
-  color: #383d41;
-}
-
-.status.in-progress {
-  background-color: #cce5ff;
-  color: #004085;
-}
-
-.status.completed {
-  background-color: #d4edda;
-  color: #155724;
-}
-
-.status.cancelled {
-  background-color: #f8d7da;
-  color: #721c24;
-}
-
 .task-description {
   color: #666;
   margin-bottom: 15px;
@@ -405,57 +409,4 @@ export default {
   display: flex;
   gap: 10px;
 }
-
-.btn {
-  padding: 6px 12px;
-  border-radius: 4px;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.3s;
-}
-
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #0056b3;
-}
-
-.btn-success {
-  background-color: #28a745;
-  color: white;
-}
-
-.btn-success:hover {
-  background-color: #1e7e34;
-}
-
-.btn-outline {
-  background-color: transparent;
-  color: #007bff;
-  border: 1px solid #007bff;
-}
-
-.btn-outline:hover {
-  background-color: #007bff;
-  color: white;
-}
-
-.btn-danger {
-  background-color: #dc3545;
-  color: white;
-}
-
-.btn-danger:hover {
-  background-color: #c82333;
-}
-
-.btn-sm {
-  padding: 4px 8px;
-  font-size: 12px;
-}
 </style>
-

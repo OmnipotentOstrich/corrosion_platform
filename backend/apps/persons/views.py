@@ -114,14 +114,21 @@ class PersonProjectListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         # 非管理员只能看到自己的项目
         if not self.request.user.is_staff:
-            person = Person.objects.get(user=self.request.user)
-            return PersonProject.objects.filter(person=person)
+            try:
+                person = Person.objects.get(user=self.request.user)
+                return PersonProject.objects.filter(person=person)
+            except Person.DoesNotExist:
+                return PersonProject.objects.none()
         return super().get_queryset()
     
     def perform_create(self, serializer):
         if not self.request.user.is_staff:
-            person = Person.objects.get(user=self.request.user)
-            serializer.save(person=person)
+            try:
+                person = Person.objects.get(user=self.request.user)
+                serializer.save(person=person)
+            except Person.DoesNotExist:
+                from rest_framework.exceptions import ValidationError
+                raise ValidationError('个人信息不存在')
         else:
             serializer.save()
 
@@ -154,14 +161,21 @@ class PersonTaskListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         # 非管理员只能看到自己的任务
         if not self.request.user.is_staff:
-            person = Person.objects.get(user=self.request.user)
-            return PersonTask.objects.filter(person=person)
+            try:
+                person = Person.objects.get(user=self.request.user)
+                return PersonTask.objects.filter(person=person)
+            except Person.DoesNotExist:
+                return PersonTask.objects.none()
         return super().get_queryset()
     
     def perform_create(self, serializer):
         if not self.request.user.is_staff:
-            person = Person.objects.get(user=self.request.user)
-            serializer.save(person=person)
+            try:
+                person = Person.objects.get(user=self.request.user)
+                serializer.save(person=person)
+            except Person.DoesNotExist:
+                from rest_framework.exceptions import ValidationError
+                raise ValidationError('个人信息不存在')
         else:
             serializer.save()
 
@@ -287,11 +301,54 @@ class PersonDocumentDetailView(generics.RetrieveUpdateDestroyAPIView):
 def person_statistics(request):
     """个人统计数据"""
     try:
+        # 如果是管理员，返回所有个人用户的汇总统计
+        if request.user.is_staff:
+            total_projects = PersonProject.objects.count()
+            ongoing_projects = PersonProject.objects.filter(status='in_progress').count()
+            completed_projects = PersonProject.objects.filter(status='completed').count()
+            total_tasks = PersonTask.objects.count()
+            pending_tasks = PersonTask.objects.filter(status='pending').count()
+            in_progress_tasks = PersonTask.objects.filter(status='in_progress').count()
+            completed_tasks = PersonTask.objects.filter(status='completed').count()
+            
+            # 计算完成率
+            if total_tasks > 0:
+                completion_rate = f"{(completed_tasks / total_tasks * 100):.1f}%"
+            else:
+                completion_rate = "0%"
+            
+            data = {
+                'ongoing_projects': ongoing_projects,
+                'pending_tasks': pending_tasks,
+                'completed_tasks': completed_tasks,
+                'completion_rate': completion_rate,
+                'total_projects': total_projects,
+                'in_progress_tasks': in_progress_tasks,
+            }
+            return Response(data)
+        
+        # 个人用户返回自己的统计
         person = Person.objects.get(user=request.user)
-        statistics = PersonStatistics.objects.get(person=person)
+        
+        # 如果统计数据不存在，创建默认的
+        statistics, created = PersonStatistics.objects.get_or_create(
+            person=person,
+            defaults={
+                'total_projects': PersonProject.objects.filter(person=person).count(),
+                'completed_projects': PersonProject.objects.filter(person=person, status='completed').count(),
+                'total_tasks': PersonTask.objects.filter(person=person).count(),
+                'completed_tasks': PersonTask.objects.filter(person=person, status='completed').count(),
+                'work_days': 0,
+            }
+        )
+        
         serializer = PersonStatisticsSerializer(statistics)
         return Response(serializer.data)
     except Person.DoesNotExist:
-        return Response({'error': '个人用户信息不存在'}, status=status.HTTP_404_NOT_FOUND)
-    except PersonStatistics.DoesNotExist:
-        return Response({'error': '统计数据不存在'}, status=status.HTTP_404_NOT_FOUND)
+        # 如果个人信息不存在，返回空统计
+        return Response({
+            'ongoing_projects': 0,
+            'pending_tasks': 0,
+            'completed_tasks': 0,
+            'completion_rate': '0%',
+        })

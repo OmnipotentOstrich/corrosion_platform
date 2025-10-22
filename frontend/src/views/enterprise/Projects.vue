@@ -25,6 +25,9 @@
     </div>
     
     <div class="projects-list" v-loading="loading">
+      <div v-if="filteredProjects.length === 0" class="empty-state">
+        <p>暂无项目数据</p>
+      </div>
       <div v-for="project in filteredProjects" :key="project.id" class="project-card">
         <div class="project-header">
           <h3>{{ project.name }}</h3>
@@ -44,120 +47,152 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'EnterpriseProjects',
-  data() {
-    return {
-      searchQuery: '',
-      statusFilter: '',
-      projects: [],
-      loading: false
-    }
-  },
-  mounted() {
-    this.loadProjects()
-  },
-  watch: {
-    searchQuery() { this.loadProjects() },
-    statusFilter() { this.loadProjects() }
-  },
-  computed: {
-    filteredProjects() {
-      return this.projects.filter(project => {
-        const matchesSearch = project.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                             project.description.toLowerCase().includes(this.searchQuery.toLowerCase())
-        const matchesStatus = !this.statusFilter || project.status === this.statusFilter
-        return matchesSearch && matchesStatus
-      })
-    }
-  },
-  methods: {
-    async loadProjects() {
-      try {
-        this.loading = true
-        const params = {}
-        if (this.searchQuery) params.search = this.searchQuery
-        if (this.statusFilter) params.status = this.statusFilter
-        
-        const response = await this.$api.get('/enterprises/projects/', { params }).catch(() => ({ data: [] }))
-        this.projects = response.data.results || response.data
-      } catch (error) {
-        console.error('加载项目列表失败:', error)
-        this.projects = []
-      } finally {
-        this.loading = false
-      }
-    },
+<script setup>
+import { ref, computed, onMounted, watch } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import api from '@/api'
+import dayjs from 'dayjs'
+
+// 响应式数据
+const loading = ref(false)
+const searchQuery = ref('')
+const statusFilter = ref('')
+const projects = ref([])
+
+// 状态映射
+const statusMap = {
+  'active': '进行中',
+  'completed': '已完成',
+  'paused': '暂停',
+  'pending': '待开始'
+}
+
+// 格式化日期
+const formatDate = (date) => {
+  return date ? dayjs(date).format('YYYY-MM-DD') : '-'
+}
+
+// 过滤后的项目列表
+const filteredProjects = computed(() => {
+  return projects.value.filter(project => {
+    const matchesSearch = !searchQuery.value || 
+      project.name?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      project.description?.toLowerCase().includes(searchQuery.value.toLowerCase())
+    const matchesStatus = !statusFilter.value || project.status === statusFilter.value
+    return matchesSearch && matchesStatus
+  })
+})
+
+// 加载项目列表
+const loadProjects = async () => {
+  try {
+    loading.value = true
+    const params = {}
+    if (searchQuery.value) params.search = searchQuery.value
+    if (statusFilter.value) params.status = statusFilter.value
     
-    async createProject() {
-      try {
-        const { value } = await this.$prompt('请输入项目名称', '新建项目', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          inputPattern: /.+/,
-          inputErrorMessage: '项目名称不能为空'
-        })
-        
-        await this.$api.post('/enterprises/projects/', {
-          name: value,
-          description: '',
-          status: 'active'
-        })
-        
-        this.$message.success(`项目 ${value} 创建成功`)
-        this.loadProjects()
-      } catch (error) {
-        if (error !== 'cancel') {
-          console.error('创建项目失败:', error)
-          this.$message.error('创建项目失败')
-        }
-      }
-    },
-    viewProject(project) {
-      this.$alert(`
-        <div style="text-align: left;">
-          <h3>${project.name}</h3>
-          <p><strong>描述：</strong>${project.description}</p>
-          <p><strong>负责人：</strong>${project.manager}</p>
-          <p><strong>截止日期：</strong>${project.deadline}</p>
-          <p><strong>状态：</strong>${project.statusText}</p>
-        </div>
-      `, '项目详情', {
-        dangerouslyUseHTMLString: true,
-        confirmButtonText: '关闭'
-      })
-    },
-    async editProject(project) {
-      try {
-        const { value } = await this.$prompt(`编辑项目 - ${project.name}`, '编辑项目', {
-          confirmButtonText: '保存',
-          cancelButtonText: '取消',
-          inputValue: project.name,
-          inputPattern: /.+/,
-          inputErrorMessage: '项目名称不能为空'
-        })
-        
-        await this.$api.put(`/enterprises/projects/${project.id}/`, {
-          ...project,
-          name: value
-        })
-        
-        this.$message.success('项目信息已更新')
-        this.loadProjects()
-      } catch (error) {
-        if (error !== 'cancel') {
-          console.error('更新项目失败:', error)
-          this.$message.error('更新项目失败')
-        }
-      }
-    }
-  },
-  
-  beforeCreate() {
-    this.$api = this.$root.$options.globalProperties.$api || require('@/api').default
+    const response = await api.get('/enterprises/projects/', { params })
+    const data = response.data.results || response.data || []
+    
+    projects.value = data.map(project => ({
+      id: project.id,
+      name: project.name || project.title || '未命名项目',
+      description: project.description || '暂无描述',
+      manager: project.manager_name || project.manager || '-',
+      deadline: formatDate(project.end_date || project.deadline),
+      status: project.status || 'active',
+      statusText: statusMap[project.status] || project.status,
+      ...project
+    }))
+  } catch (error) {
+    console.error('加载项目列表失败:', error)
+    ElMessage.error('加载项目列表失败')
+    projects.value = []
+  } finally {
+    loading.value = false
   }
 }
+
+// 创建项目
+const createProject = async () => {
+  try {
+    const { value } = await ElMessageBox.prompt('请输入项目名称', '新建项目', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      inputPattern: /.+/,
+      inputErrorMessage: '项目名称不能为空'
+    })
+    
+    await api.post('/enterprises/projects/', {
+      name: value,
+      description: '',
+      status: 'active'
+    })
+    
+    ElMessage.success(`项目 ${value} 创建成功`)
+    loadProjects()
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('创建项目失败:', error)
+      ElMessage.error('创建项目失败')
+    }
+  }
+}
+
+// 查看项目详情
+const viewProject = (project) => {
+  ElMessageBox.alert(
+    `
+      <div style="text-align: left;">
+        <p><strong>描述：</strong>${project.description}</p>
+        <p><strong>负责人：</strong>${project.manager}</p>
+        <p><strong>截止日期：</strong>${project.deadline}</p>
+        <p><strong>状态：</strong>${project.statusText}</p>
+      </div>
+    `,
+    project.name,
+    {
+      dangerouslyUseHTMLString: true,
+      confirmButtonText: '关闭'
+    }
+  )
+}
+
+// 编辑项目
+const editProject = async (project) => {
+  try {
+    const { value } = await ElMessageBox.prompt(`编辑项目 - ${project.name}`, '编辑项目', {
+      confirmButtonText: '保存',
+      cancelButtonText: '取消',
+      inputValue: project.name,
+      inputPattern: /.+/,
+      inputErrorMessage: '项目名称不能为空'
+    })
+    
+    await api.put(`/enterprises/projects/${project.id}/`, {
+      ...project,
+      name: value
+    })
+    
+    ElMessage.success('项目信息已更新')
+    loadProjects()
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('更新项目失败:', error)
+      ElMessage.error('更新项目失败')
+    }
+  }
+}
+
+// 监听搜索和过滤条件变化
+watch([searchQuery, statusFilter], () => {
+  // 使用computed已经实现了过滤，这里不需要重新加载
+})
+
+// 组件挂载时加载数据
+onMounted(() => {
+  loadProjects()
+})
 </script>
 
 <style scoped>
@@ -292,6 +327,13 @@ export default {
 .btn-sm {
   padding: 4px 8px;
   font-size: 12px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+  font-size: 16px;
 }
 </style>
 

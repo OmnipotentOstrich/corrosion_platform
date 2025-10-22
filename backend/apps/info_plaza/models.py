@@ -52,7 +52,7 @@ class InfoPost(models.Model):
     ]
     
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='info_posts', verbose_name='发布者')
-    category = models.ForeignKey(InfoCategory, on_delete=models.CASCADE, related_name='posts', verbose_name='分类')
+    category = models.ForeignKey(InfoCategory, on_delete=models.SET_NULL, null=True, blank=True, related_name='posts', verbose_name='分类')
     post_type = models.CharField(max_length=20, choices=POST_TYPE_CHOICES, verbose_name='信息类型')
     title = models.CharField(max_length=200, verbose_name='标题')
     content = models.TextField(verbose_name='内容')

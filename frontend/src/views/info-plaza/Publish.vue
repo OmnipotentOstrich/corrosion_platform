@@ -19,13 +19,26 @@
         </div>
         
         <div class="form-group">
-          <label for="category">分类 *</label>
-          <select id="category" v-model="form.category" required>
-            <option value="">请选择分类</option>
-            <option value="technology">技术分享</option>
+          <label for="post_type">信息类型 *</label>
+          <select id="post_type" v-model="form.post_type" required>
+            <option value="">请选择信息类型</option>
+            <option value="supply">供应信息</option>
+            <option value="demand">需求信息</option>
+            <option value="recruitment">招聘信息</option>
+            <option value="tender">招标信息</option>
+            <option value="technology">技术文章</option>
             <option value="news">行业资讯</option>
-            <option value="project">项目信息</option>
-            <option value="resource">资源共享</option>
+            <option value="other">其他</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="category">分类</label>
+          <select id="category" v-model="form.category">
+            <option value="">请选择分类（可选）</option>
+            <option v-for="cat in categories" :key="cat.id" :value="cat.id">
+              {{ cat.name }}
+            </option>
           </select>
         </div>
         
@@ -61,11 +74,11 @@
         </div>
         
         <div class="form-actions">
-          <button type="button" class="btn btn-outline" @click="resetForm">
+          <button type="button" class="btn btn-outline" @click="resetForm" :disabled="publishing">
             重置
           </button>
-          <button type="submit" class="btn btn-primary" :disabled="!isFormValid">
-            发布信息
+          <button type="submit" class="btn btn-primary" :disabled="!isFormValid || publishing">
+            {{ publishing ? '发布中...' : '发布信息' }}
           </button>
         </div>
       </form>
@@ -74,54 +87,138 @@
 </template>
 
 <script>
+import api from '@/api'
+import { ElMessage, ElMessageBox } from 'element-plus'
+
 export default {
   name: 'InfoPublish',
   data() {
     return {
       form: {
         title: '',
+        post_type: '',
         category: '',
         summary: '',
         content: '',
         tags: ''
-      }
+      },
+      categories: [],
+      tags: [],
+      loading: false,
+      publishing: false
     }
+  },
+  mounted() {
+    this.loadCategories()
+    this.loadTags()
   },
   computed: {
     isFormValid() {
-      return this.form.title && this.form.category && this.form.content
+      return this.form.title && this.form.post_type && this.form.content
     }
   },
   methods: {
-    publishInfo() {
+    // 加载分类列表
+    async loadCategories() {
+      try {
+        const response = await api.get('/info-plaza/categories/')
+        this.categories = response.data.results || response.data || []
+      } catch (error) {
+        console.error('加载分类失败:', error)
+      }
+    },
+    
+    // 加载标签列表
+    async loadTags() {
+      try {
+        const response = await api.get('/info-plaza/tags/')
+        this.tags = response.data.results || response.data || []
+      } catch (error) {
+        console.error('加载标签失败:', error)
+      }
+    },
+    
+    // 发布信息
+    async publishInfo() {
       if (!this.isFormValid) {
-        this.$message.warning('请填写必填字段')
+        ElMessage.warning('请填写必填字段')
         return
       }
       
-      // 显示确认对话框
-      this.$confirm('确定要发布此信息吗？', '确认发布', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'info'
-      }).then(() => {
-        // TODO: 调用后端API发布信息
-        // await api.post('/info-plaza/posts/', this.form)
+      try {
+        // 显示确认对话框
+        await ElMessageBox.confirm('确定要发布此信息吗？', '确认发布', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'info'
+        })
         
-        this.$message.success('信息发布成功！')
+        this.publishing = true
+        
+        // 准备提交数据
+        const postData = {
+          title: this.form.title,
+          post_type: this.form.post_type,
+          content: this.form.content,
+          summary: this.form.summary || '',
+        }
+        
+        // 如果选择了分类，添加分类ID
+        if (this.form.category) {
+          postData.category = this.form.category
+        }
+        
+        // 处理标签 - 保持为逗号分隔的字符串格式
+        if (this.form.tags) {
+          postData.tags = this.form.tags.trim()
+        }
+        
+        // 调用后端API发布信息
+        const response = await api.post('/info-plaza/posts/', postData)
+        
+        ElMessage.success('信息发布成功！')
         
         // 重置表单
         this.resetForm()
         
-        // 跳转到信息广场
-        this.$router.push('/dashboard/info-plaza')
-      }).catch(() => {
-        this.$message.info('已取消发布')
-      })
+        // 延迟跳转到信息广场，让用户看到成功提示
+        setTimeout(() => {
+          this.$router.push('/dashboard/info-plaza')
+        }, 1000)
+        
+      } catch (error) {
+        if (error !== 'cancel') {
+          console.error('发布信息失败:', error)
+          
+          // 处理错误消息
+          let errorMsg = '发布失败，请稍后重试'
+          if (error.response?.data) {
+            const errorData = error.response.data
+            if (typeof errorData === 'object') {
+              // 提取第一个错误消息
+              const firstError = Object.values(errorData)[0]
+              if (Array.isArray(firstError)) {
+                errorMsg = firstError[0]
+              } else if (typeof firstError === 'string') {
+                errorMsg = firstError
+              }
+            } else if (typeof errorData === 'string') {
+              errorMsg = errorData
+            }
+          }
+          
+          ElMessage.error(errorMsg)
+        }
+      } finally {
+        this.publishing = false
+      }
     },
+    
+    // 重置表单
     resetForm() {
       this.form = {
         title: '',
+        post_type: '',
         category: '',
         summary: '',
         content: '',

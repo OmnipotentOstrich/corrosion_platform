@@ -88,6 +88,9 @@
 </template>
 
 <script>
+import api from '@/api'
+import { ElMessage, ElMessageBox } from 'element-plus'
+
 export default {
   name: 'SystemLogs',
   data() {
@@ -115,18 +118,20 @@ export default {
   },
   computed: {
     filteredLogs() {
-      return this.logs.filter(log => {
-        const matchesSearch = log.action.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                             log.detail.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                             log.user.toLowerCase().includes(this.searchQuery.toLowerCase())
-        const matchesLevel = !this.levelFilter || log.level === this.levelFilter
-        const matchesModule = !this.moduleFilter || log.module === this.moduleFilter
-        const matchesDate = !this.dateFilter || log.timestamp.startsWith(this.dateFilter)
-        return matchesSearch && matchesLevel && matchesModule && matchesDate
-      })
+      return this.logs
     }
   },
   methods: {
+    getLevelText(level) {
+      const levelMap = {
+        'info': '信息',
+        'warning': '警告',
+        'error': '错误',
+        'debug': '调试'
+      }
+      return levelMap[level] || level
+    },
+    
     async loadLogs() {
       try {
         this.loading = true
@@ -139,21 +144,37 @@ export default {
         if (this.moduleFilter) params.module = this.moduleFilter
         if (this.dateFilter) params.date = this.dateFilter
         
-        const response = await this.$api.get('/system/logs/', { params }).catch(() => ({ data: { results: [] } }))
-        this.logs = response.data.results || response.data
+        const response = await api.get('/system/logs/', { params })
+        const data = response.data.results || response.data || []
+        
+        // 格式化日志数据
+        this.logs = data.map(log => ({
+          id: log.id,
+          timestamp: log.timestamp || log.created_at || '-',
+          level: log.level || 'info',
+          levelText: this.getLevelText(log.level),
+          module: log.module || '-',
+          user: log.user || log.username || '-',
+          action: log.action || log.message || '-',
+          ip: log.ip_address || log.ip || '-',
+          detail: log.detail || log.description || '-',
+          ...log
+        }))
+        
         if (response.data.count) {
           this.totalPages = Math.ceil(response.data.count / this.pageSize)
         }
       } catch (error) {
         console.error('加载日志失败:', error)
-        this.$message.error('加载日志失败')
+        ElMessage.error('加载日志失败')
+        this.logs = []
       } finally {
         this.loading = false
       }
     },
     
     viewLogDetail(log) {
-      this.$alert(`
+      ElMessageBox.alert(`
         <div style="text-align: left;">
           <h3>日志详情</h3>
           <p><strong>时间：</strong>${log.timestamp}</p>
@@ -169,9 +190,10 @@ export default {
         confirmButtonText: '关闭'
       })
     },
+    
     async exportLogs() {
       try {
-        await this.$confirm('确定要导出当前筛选的日志吗？', '确认导出', {
+        await ElMessageBox.confirm('确定要导出当前筛选的日志吗？', '确认导出', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'info'
@@ -183,46 +205,44 @@ export default {
         if (this.dateFilter) params.append('date', this.dateFilter)
         
         window.open(`/api/v1/system/logs/export/?${params.toString()}`, '_blank')
-        this.$message.success('日志导出中，请稍候...')
+        ElMessage.success('日志导出中，请稍候...')
       } catch (error) {
         if (error !== 'cancel') {
-          this.$message.info('已取消导出')
+          ElMessage.info('已取消导出')
         }
       }
     },
     
     async clearLogs() {
       try {
-        await this.$confirm('确定要清空所有日志吗？此操作不可恢复！', '警告', {
+        await ElMessageBox.confirm('确定要清空所有日志吗？此操作不可恢复！', '警告', {
           confirmButtonText: '确定清空',
           cancelButtonText: '取消',
           type: 'error'
         })
         
-        await this.$api.delete('/system/logs/clear/')
-        this.$message.success('日志已清空')
+        await api.delete('/system/logs/clear/')
+        ElMessage.success('日志已清空')
         this.loadLogs()
       } catch (error) {
         if (error !== 'cancel') {
           console.error('清空日志失败:', error)
-          this.$message.error('清空日志失败')
+          ElMessage.error('清空日志失败')
         }
       }
     },
+    
     previousPage() {
       if (this.currentPage > 1) {
         this.currentPage--
       }
     },
+    
     nextPage() {
       if (this.currentPage < this.totalPages) {
         this.currentPage++
       }
     }
-  },
-  
-  beforeCreate() {
-    this.$api = this.$root.$options.globalProperties.$api || require('@/api').default
   }
 }
 </script>

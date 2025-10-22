@@ -136,7 +136,8 @@ class InfoPostCreateSerializer(serializers.ModelSerializer):
         model = InfoPost
         fields = [
             'category', 'post_type', 'title', 'content', 'summary',
-            'tags', 'priority', 'contact_info', 'location', 'price', 'valid_until'
+            'tags', 'priority', 'contact_info', 'location', 'price', 'valid_until',
+            'images'
         ]
     
     def create(self, validated_data):

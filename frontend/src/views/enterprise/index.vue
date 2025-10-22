@@ -25,18 +25,40 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'EnterpriseCenter',
-  data() {
-    return {
-      // 企业中心数据
+<script setup>
+import { ref, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
+import api from '@/api'
+
+// 企业统计数据
+const stats = ref({
+  totalProjects: 0,
+  ongoingProjects: 0,
+  totalEmployees: 0,
+  totalRevenue: '0'
+})
+
+// 加载企业统计数据
+const loadEnterpriseStats = async () => {
+  try {
+    const response = await api.get('/enterprises/statistics/')
+    if (response.data) {
+      stats.value = {
+        totalProjects: response.data.total_projects || 0,
+        ongoingProjects: response.data.ongoing_projects || 0,
+        totalEmployees: response.data.total_employees || 0,
+        totalRevenue: response.data.total_revenue || '0'
+      }
     }
-  },
-  mounted() {
-    // 组件挂载后的逻辑
+  } catch (error) {
+    console.error('加载企业统计数据失败:', error)
+    // 如果API调用失败，使用默认值
   }
 }
+
+onMounted(() => {
+  loadEnterpriseStats()
+})
 </script>
 
 <style scoped>

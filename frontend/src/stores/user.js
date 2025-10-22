@@ -238,7 +238,7 @@ export const useUserStore = defineStore('user', () => {
   const setUser = (userData) => {
     user.value = userData
     // 根据用户类型设置默认菜单
-    if (userData.role === 'super_admin' || userData.user_type === 'admin') {
+    if (userData.role === 'super_admin' || userData.user_type === 'admin' || userData.is_superuser) {
       setDefaultAdminMenus()
     } else if (userData.user_type === 'enterprise') {
       setDefaultEnterpriseMenus()

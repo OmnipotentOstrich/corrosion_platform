@@ -3,8 +3,8 @@
     <div class="page-header">
       <h1>角色管理</h1>
       <div class="header-actions">
-        <button class="btn btn-primary" @click="addRole">
-          添加角色
+        <button class="btn btn-primary" @click="showAddRoleDialog">
+          <span style="margin-right: 5px;">+</span> 添加角色
         </button>
       </div>
     </div>
@@ -23,8 +23,8 @@
         <div class="permissions">
           <h4>权限列表</h4>
           <div class="permission-list">
-            <span v-for="permission in role.permissions" :key="permission" class="permission-tag">
-              {{ permission }}
+            <span v-for="permission in role.permissions" :key="permission.id || permission.code" class="permission-tag">
+              {{ getPermissionName(permission) }}
             </span>
           </div>
         </div>
@@ -32,7 +32,7 @@
           <button class="btn btn-sm btn-outline" @click="viewRole(role)">
             查看详情
           </button>
-          <button class="btn btn-sm btn-primary" @click="editRole(role)">
+          <button class="btn btn-sm btn-primary" @click="showEditRoleDialog(role)">
             编辑
           </button>
           <button class="btn btn-sm btn-danger" @click="deleteRole(role)" v-if="role.deletable">
@@ -41,62 +41,328 @@
         </div>
       </div>
     </div>
+
+    <!-- 添加/编辑角色对话框 -->
+    <el-dialog 
+      v-model="roleDialogVisible" 
+      :title="isEditing ? '编辑角色' : '添加角色'"
+      width="600px"
+      :close-on-click-modal="false"
+    >
+      <el-form :model="roleForm" :rules="roleFormRules" ref="roleFormRef" label-width="100px">
+        <el-form-item label="角色名称" prop="name">
+          <el-input 
+            v-model="roleForm.name" 
+            placeholder="请输入角色名称"
+            clearable
+          />
+        </el-form-item>
+        
+        <el-form-item label="角色代码" prop="code">
+          <el-input 
+            v-model="roleForm.code" 
+            placeholder="自动生成或手动输入，如: role_manager"
+            clearable
+          />
+          <span style="font-size: 12px; color: #999;">留空将自动生成</span>
+        </el-form-item>
+        
+        <el-form-item label="角色描述" prop="description">
+          <el-input 
+            v-model="roleForm.description" 
+            type="textarea"
+            :rows="3"
+            placeholder="请输入角色描述"
+            clearable
+          />
+        </el-form-item>
+        
+        <el-form-item label="角色状态" prop="is_active">
+          <el-switch 
+            v-model="roleForm.is_active"
+            active-text="启用"
+            inactive-text="禁用"
+          />
+        </el-form-item>
+        
+        <el-form-item label="权限配置">
+          <div class="permissions-selector">
+            <el-checkbox 
+              v-model="checkAll" 
+              :indeterminate="isIndeterminate"
+              @change="handleCheckAllChange"
+            >
+              全选
+            </el-checkbox>
+            <div style="margin: 15px 0;"></div>
+            <el-checkbox-group v-model="roleForm.selectedPermissions" @change="handleCheckedPermissionsChange">
+              <div v-for="group in groupedPermissions" :key="group.category" class="permission-group">
+                <h4>{{ group.category }}</h4>
+                <el-checkbox 
+                  v-for="permission in group.permissions" 
+                  :key="permission.id" 
+                  :label="permission.id"
+                  style="display: block; margin: 8px 0;"
+                >
+                  {{ permission.name }} <span style="color: #999; font-size: 12px;">({{ permission.code }})</span>
+                </el-checkbox>
+              </div>
+            </el-checkbox-group>
+          </div>
+        </el-form-item>
+      </el-form>
+      
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="roleDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitRoleForm" :loading="submitting">
+            {{ isEditing ? '保存' : '创建' }}
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script>
+import api from '@/api'
+import { ElMessage, ElMessageBox } from 'element-plus'
+
 export default {
   name: 'SystemRoles',
   data() {
     return {
       roles: [],
-      loading: false
+      loading: false,
+      roleDialogVisible: false,
+      isEditing: false,
+      submitting: false,
+      allPermissions: [],
+      checkAll: false,
+      isIndeterminate: false,
+      roleForm: {
+        id: null,
+        name: '',
+        code: '',
+        description: '',
+        is_active: true,
+        selectedPermissions: []
+      },
+      roleFormRules: {
+        name: [
+          { required: true, message: '请输入角色名称', trigger: 'blur' },
+          { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
+        ],
+        code: [
+          { max: 50, message: '长度不能超过 50 个字符', trigger: 'blur' }
+        ]
+      }
+    }
+  },
+  computed: {
+    groupedPermissions() {
+      // 按照权限代码前缀分组
+      const groups = {}
+      this.allPermissions.forEach(permission => {
+        const category = this.getPermissionCategory(permission.code)
+        if (!groups[category]) {
+          groups[category] = []
+        }
+        groups[category].push(permission)
+      })
+      
+      return Object.keys(groups).map(category => ({
+        category,
+        permissions: groups[category]
+      }))
     }
   },
   mounted() {
     this.loadRoles()
+    this.loadPermissions()
   },
   methods: {
     async loadRoles() {
       try {
         this.loading = true
-        const response = await this.$api.get('/auth/roles/').catch(() => ({ data: [] }))
-        this.roles = response.data.results || response.data
+        const response = await api.get('/auth/roles/')
+        const data = response.data.results || response.data || []
+        
+        // 格式化角色数据
+        this.roles = data.map(role => ({
+          id: role.id,
+          name: role.name || '未命名角色',
+          description: role.description || '暂无描述',
+          level: role.level || 'low',
+          levelText: this.getLevelText(role.level),
+          userCount: role.user_count || role.users?.length || 0,
+          permissionCount: role.permission_count || role.permissions?.length || 0,
+          permissions: role.permissions || [],
+          deletable: !role.is_system && role.id > 3, // 系统角色不可删除
+          ...role
+        }))
       } catch (error) {
         console.error('加载角色列表失败:', error)
+        ElMessage.error('加载角色列表失败')
         this.roles = []
       } finally {
         this.loading = false
       }
     },
     
-    async addRole() {
+    getLevelText(level) {
+      const levelMap = {
+        'high': '高级',
+        'medium': '中级',
+        'low': '普通'
+      }
+      return levelMap[level] || '普通'
+    },
+    
+    async loadPermissions() {
       try {
-        const { value } = await this.$prompt('请输入角色名称', '添加角色', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        inputPattern: /.+/,
-        inputErrorMessage: '角色名称不能为空'
-        })
-        
-        await this.$api.post('/auth/roles/', {
-          name: value,
-          description: '',
-          permissions: []
-        })
-        
-        this.$message.success(`角色 ${value} 添加成功`)
-        this.loadRoles()
+        const response = await api.get('/auth/permissions/')
+        this.allPermissions = response.data.results || response.data || []
       } catch (error) {
-        if (error !== 'cancel') {
-          console.error('添加角色失败:', error)
-          this.$message.error('添加角色失败')
-        }
+        console.error('加载权限列表失败:', error)
+        this.allPermissions = []
       }
     },
+    
+    getPermissionName(permission) {
+      // 如果permission是字符串，直接返回
+      if (typeof permission === 'string') {
+        return permission
+      }
+      // 如果是对象，返回name属性
+      return permission?.name || permission?.code || '未知权限'
+    },
+    
+    getPermissionCategory(code) {
+      // 根据权限代码前缀分类
+      const categoryMap = {
+        'user': '用户管理',
+        'role': '角色管理',
+        'enterprise': '企业管理',
+        'info': '信息管理',
+        'resource': '资源管理',
+        'system': '系统管理'
+      }
+      
+      const prefix = code.split('_')[0]
+      return categoryMap[prefix] || '其他权限'
+    },
+    
+    showAddRoleDialog() {
+      this.isEditing = false
+      this.roleForm = {
+        id: null,
+        name: '',
+        code: '',
+        description: '',
+        is_active: true,
+        selectedPermissions: []
+      }
+      this.checkAll = false
+      this.isIndeterminate = false
+      this.roleDialogVisible = true
+      // 重置表单验证
+      this.$nextTick(() => {
+        this.$refs.roleFormRef?.clearValidate()
+      })
+    },
+    
+    showEditRoleDialog(role) {
+      this.isEditing = true
+      this.roleForm = {
+        id: role.id,
+        name: role.name,
+        code: role.code,
+        description: role.description || '',
+        is_active: role.is_active !== false,
+        selectedPermissions: role.permissions.map(p => p.id)
+      }
+      this.updateCheckAllStatus()
+      this.roleDialogVisible = true
+      // 重置表单验证
+      this.$nextTick(() => {
+        this.$refs.roleFormRef?.clearValidate()
+      })
+    },
+    
+    handleCheckAllChange(val) {
+      this.roleForm.selectedPermissions = val ? this.allPermissions.map(p => p.id) : []
+      this.isIndeterminate = false
+    },
+    
+    handleCheckedPermissionsChange(value) {
+      this.updateCheckAllStatus()
+    },
+    
+    updateCheckAllStatus() {
+      const checkedCount = this.roleForm.selectedPermissions.length
+      this.checkAll = checkedCount === this.allPermissions.length
+      this.isIndeterminate = checkedCount > 0 && checkedCount < this.allPermissions.length
+    },
+    
+    async submitRoleForm() {
+      // 验证表单
+      const valid = await this.$refs.roleFormRef.validate().catch(() => false)
+      if (!valid) {
+        return
+      }
+      
+      try {
+        this.submitting = true
+        
+        const formData = {
+          name: this.roleForm.name,
+          code: this.roleForm.code || ('role_' + Date.now()),
+          description: this.roleForm.description,
+          is_active: this.roleForm.is_active,
+          permission_ids: this.roleForm.selectedPermissions
+        }
+        
+        if (this.isEditing) {
+          // 编辑角色
+          await api.put(`/auth/roles/${this.roleForm.id}/`, formData)
+          ElMessage.success('角色更新成功')
+        } else {
+          // 创建角色
+          await api.post('/auth/roles/', formData)
+          ElMessage.success('角色创建成功')
+        }
+        
+        this.roleDialogVisible = false
+        this.loadRoles()
+      } catch (error) {
+        console.error('提交角色失败:', error)
+        let errorMsg = this.isEditing ? '更新角色失败' : '创建角色失败'
+        if (error.response?.data) {
+          const errData = error.response.data
+          if (errData.code) {
+            errorMsg += ': 角色代码已存在'
+          } else if (errData.name) {
+            errorMsg += ': 角色名称已存在'
+          } else if (typeof errData === 'string') {
+            errorMsg += ': ' + errData
+          } else if (errData.detail) {
+            errorMsg += ': ' + errData.detail
+          }
+        }
+        ElMessage.error(errorMsg)
+      } finally {
+        this.submitting = false
+      }
+    },
+    
     viewRole(role) {
-      const permissionsHtml = role.permissions.map(p => `<span style="display: inline-block; background: #e9ecef; padding: 2px 6px; margin: 2px; border-radius: 3px; font-size: 12px;">${p}</span>`).join('')
-      this.$alert(`
+      const permissionsHtml = role.permissions.map(p => {
+        const name = this.getPermissionName(p)
+        return `<span style="display: inline-block; background: #e9ecef; padding: 2px 6px; margin: 2px; border-radius: 3px; font-size: 12px;">${name}</span>`
+      }).join('')
+      
+      ElMessageBox.alert(`
         <div style="text-align: left;">
           <h3>${role.name}</h3>
           <p><strong>描述：</strong>${role.description}</p>
@@ -104,60 +370,37 @@ export default {
           <p><strong>用户数：</strong>${role.userCount}</p>
           <p><strong>权限数：</strong>${role.permissionCount}</p>
           <p><strong>权限列表：</strong></p>
-          <div style="margin-top: 10px;">${permissionsHtml}</div>
+          <div style="margin-top: 10px;">${permissionsHtml || '暂无权限'}</div>
         </div>
       `, '角色详情', {
         dangerouslyUseHTMLString: true,
         confirmButtonText: '关闭'
       })
     },
-    async editRole(role) {
-      try {
-        const { value } = await this.$prompt(`编辑角色 - ${role.name}`, '编辑角色', {
-          confirmButtonText: '保存',
-          cancelButtonText: '取消',
-          inputValue: role.description,
-          inputPattern: /.+/,
-          inputErrorMessage: '描述不能为空'
-        })
-        
-        await this.$api.put(`/auth/roles/${role.id}/`, {
-          ...role,
-          description: value
-        })
-        
-        this.$message.success('角色信息已更新')
-        this.loadRoles()
-      } catch (error) {
-        if (error !== 'cancel') {
-          console.error('更新角色失败:', error)
-          this.$message.error('更新角色失败')
-        }
-      }
-    },
+    
     
     async deleteRole(role) {
       try {
-        await this.$confirm(`确定要删除角色"${role.name}"吗？此操作不可恢复。`, '确认删除', {
-          confirmButtonText: '确定删除',
-          cancelButtonText: '取消',
-          type: 'error'
-        })
+        await ElMessageBox.confirm(
+          `确定要删除角色"${role.name}"吗？此操作不可恢复。`, 
+          '确认删除', 
+          {
+            confirmButtonText: '确定删除',
+            cancelButtonText: '取消',
+            type: 'error'
+          }
+        )
         
-        await this.$api.delete(`/auth/roles/${role.id}/`)
-        this.$message.success('角色已删除')
+        await api.delete(`/auth/roles/${role.id}/`)
+        ElMessage.success('角色已删除')
         this.loadRoles()
       } catch (error) {
         if (error !== 'cancel') {
           console.error('删除角色失败:', error)
-          this.$message.error('删除角色失败')
+          ElMessage.error('删除角色失败')
         }
       }
     }
-  },
-  
-  beforeCreate() {
-    this.$api = this.$root.$options.globalProperties.$api || require('@/api').default
   }
 }
 </script>
@@ -308,6 +551,39 @@ export default {
 .btn-sm {
   padding: 4px 8px;
   font-size: 12px;
+}
+
+/* 对话框样式 */
+.permissions-selector {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 15px;
+  background: #f8f9fa;
+}
+
+.permission-group {
+  margin-bottom: 20px;
+}
+
+.permission-group:last-child {
+  margin-bottom: 0;
+}
+
+.permission-group h4 {
+  color: #333;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #007bff;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
 }
 </style>
 

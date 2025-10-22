@@ -220,37 +220,20 @@ const handleAdminLogin = async () => {
   try {
     adminLoading.value = true
     
-    // 模拟管理员登录数据
-    const adminData = {
+    // 调用真实的后端登录API
+    const result = await userStore.login({
       username: 'admin',
       password: 'admin123'
+    })
+    
+    if (result.success) {
+      ElMessage.success('管理员登录成功！')
+      // 跳转到系统管理页面
+      router.push('/dashboard/system')
     }
-    
-    // 直接设置用户状态，模拟登录成功
-    const mockAdminUser = {
-      id: 1,
-      username: 'admin',
-      email: 'admin@corrosion-platform.com',
-      user_type: 'admin',
-      role: 'super_admin',
-      permissions: ['all'],
-      avatar: '',
-      created_at: '2024-01-01T00:00:00Z',
-      last_login: new Date().toISOString()
-    }
-    
-    // 设置用户状态
-    userStore.setUser(mockAdminUser)
-    userStore.setToken('mock-admin-token-' + Date.now())
-    
-    ElMessage.success('管理员登录成功！')
-    
-    // 跳转到系统管理页面
-    router.push('/dashboard/system')
-    
   } catch (error) {
     console.error('管理员登录失败:', error)
-    ElMessage.error('管理员登录失败，请重试')
+    ElMessage.error('管理员登录失败，请检查后端服务是否运行')
   } finally {
     adminLoading.value = false
   }
@@ -261,31 +244,20 @@ const handleEnterpriseLogin = async () => {
   try {
     enterpriseLoading.value = true
     
-    // 模拟企业用户登录数据
-    const mockEnterpriseUser = {
-      id: 2,
-      username: 'enterprise_manager',
-      email: 'manager@enterprise.com',
-      user_type: 'enterprise',
-      role: 'manager',
-      permissions: ['enterprise_manage'],
-      avatar: '',
-      created_at: '2024-01-01T00:00:00Z',
-      last_login: new Date().toISOString()
+    // 调用真实的后端登录API
+    const result = await userStore.login({
+      username: 'enterprise',
+      password: 'enterprise123'
+    })
+    
+    if (result.success) {
+      ElMessage.success('企业用户登录成功！')
+      // 跳转到企业中心
+      router.push('/dashboard/enterprise')
     }
-    
-    // 设置用户状态
-    userStore.setUser(mockEnterpriseUser)
-    userStore.setToken('mock-enterprise-token-' + Date.now())
-    
-    ElMessage.success('企业用户登录成功！')
-    
-    // 跳转到企业中心
-    router.push('/dashboard/enterprise')
-    
   } catch (error) {
     console.error('企业用户登录失败:', error)
-    ElMessage.error('企业用户登录失败，请重试')
+    ElMessage.error('企业用户登录失败，请检查后端服务是否运行')
   } finally {
     enterpriseLoading.value = false
   }
@@ -296,31 +268,20 @@ const handlePersonalLogin = async () => {
   try {
     personalLoading.value = true
     
-    // 模拟个人用户登录数据
-    const mockPersonalUser = {
-      id: 3,
-      username: 'personal_user',
-      email: 'user@personal.com',
-      user_type: 'personal',
-      role: 'user',
-      permissions: ['personal_access'],
-      avatar: '',
-      created_at: '2024-01-01T00:00:00Z',
-      last_login: new Date().toISOString()
+    // 调用真实的后端登录API
+    const result = await userStore.login({
+      username: 'user',
+      password: 'user123'
+    })
+    
+    if (result.success) {
+      ElMessage.success('个人用户登录成功！')
+      // 跳转到个人中心
+      router.push('/dashboard/personal')
     }
-    
-    // 设置用户状态
-    userStore.setUser(mockPersonalUser)
-    userStore.setToken('mock-personal-token-' + Date.now())
-    
-    ElMessage.success('个人用户登录成功！')
-    
-    // 跳转到个人中心
-    router.push('/dashboard/personal')
-    
   } catch (error) {
     console.error('个人用户登录失败:', error)
-    ElMessage.error('个人用户登录失败，请重试')
+    ElMessage.error('个人用户登录失败，请检查后端服务是否运行')
   } finally {
     personalLoading.value = false
   }

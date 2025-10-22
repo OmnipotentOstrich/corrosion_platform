@@ -170,28 +170,38 @@ router.beforeEach(async (to, from, next) => {
   // 设置页面标题
   document.title = to.meta.title ? `${to.meta.title} - 防腐保温智能数字平台` : '防腐保温智能数字平台'
   
-  // 如果有token但没有用户信息，先初始化用户信息
+  // 如果有token但没有用户信息，先尝试初始化用户信息
   if (userStore.token && !userStore.user) {
     try {
-      await userStore.initUser()
+      // 如果是测试token，跳过API调用
+      if (userStore.token.startsWith('mock-')) {
+        console.log('检测到测试token，跳过用户信息初始化')
+      } else {
+        await userStore.initUser()
+      }
     } catch (error) {
       console.error('初始化用户信息失败:', error)
+      // 如果初始化失败，清除无效token
+      userStore.logout()
     }
   }
   
-  // 检查是否需要认证
-  if (to.meta.requiresAuth !== false) {
+  // 检查是否需要认证（明确要求认证才检查）
+  if (to.meta.requiresAuth === true) {
+    // 需要认证的页面，检查是否已登录
     if (!userStore.isAuthenticated) {
       next('/login')
       return
     }
-  } else {
+  } else if (to.meta.requiresAuth === false) {
+    // 不需要认证的页面（登录、注册页）
     // 如果已登录，访问登录页面时重定向到仪表板
-    if (userStore.isAuthenticated && (to.name === 'Login' || to.name === 'Register')) {
+    if (userStore.isAuthenticated) {
       next('/dashboard')
       return
     }
   }
+  // requiresAuth 未定义的页面（如根路径），直接放行
   
   next()
 })

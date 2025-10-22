@@ -35,19 +35,19 @@
       <h2>统计信息</h2>
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-number">12</div>
+          <div class="stat-number">{{ stats.ongoingProjects }}</div>
           <div class="stat-label">进行中的项目</div>
         </div>
         <div class="stat-card">
-          <div class="stat-number">8</div>
+          <div class="stat-number">{{ stats.pendingTasks }}</div>
           <div class="stat-label">待完成任务</div>
         </div>
         <div class="stat-card">
-          <div class="stat-number">25</div>
+          <div class="stat-number">{{ stats.completedTasks }}</div>
           <div class="stat-label">已完成任务</div>
         </div>
         <div class="stat-card">
-          <div class="stat-number">95%</div>
+          <div class="stat-number">{{ stats.completionRate }}</div>
           <div class="stat-label">任务完成率</div>
         </div>
       </div>
@@ -55,18 +55,40 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'PersonalCenter',
-  data() {
-    return {
-      // 个人中心数据
+<script setup>
+import { ref, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
+import api from '@/api'
+
+// 统计数据
+const stats = ref({
+  ongoingProjects: 0,
+  pendingTasks: 0,
+  completedTasks: 0,
+  completionRate: '0%'
+})
+
+// 加载个人统计数据
+const loadPersonalStats = async () => {
+  try {
+    const response = await api.get('/persons/statistics/')
+    if (response.data) {
+      stats.value = {
+        ongoingProjects: response.data.ongoing_projects || 0,
+        pendingTasks: response.data.pending_tasks || 0,
+        completedTasks: response.data.completed_tasks || 0,
+        completionRate: response.data.completion_rate || '0%'
+      }
     }
-  },
-  mounted() {
-    // 组件挂载后的逻辑
+  } catch (error) {
+    console.error('加载个人统计数据失败:', error)
+    // 如果API调用失败，使用默认值（已经在ref中设置）
   }
 }
+
+onMounted(() => {
+  loadPersonalStats()
+})
 </script>
 
 <style scoped>

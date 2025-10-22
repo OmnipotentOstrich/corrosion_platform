@@ -25,7 +25,10 @@
       </select>
     </div>
     
-    <div class="projects-list">
+    <div v-loading="loading" class="projects-list">
+      <div v-if="filteredProjects.length === 0" class="empty-state">
+        <p>暂无项目数据</p>
+      </div>
       <div v-for="project in filteredProjects" :key="project.id" class="project-card">
         <div class="project-header">
           <h3>{{ project.name }}</h3>
@@ -55,83 +58,110 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'PersonalProjects',
-  data() {
-    return {
-      searchQuery: '',
-      roleFilter: '',
-      projects: [
-        {
-          id: 1,
-          name: '防腐保温项目A',
-          description: '大型工业设备防腐保温工程',
-          role: '项目经理',
-          progress: 75,
-          startDate: '2024-01-01',
-          deadline: '2024-12-31'
-        },
-        {
-          id: 2,
-          name: '管道维护项目B',
-          description: '地下管道防腐维护工程',
-          role: '开发人员',
-          progress: 60,
-          startDate: '2024-02-01',
-          deadline: '2024-11-30'
-        },
-        {
-          id: 3,
-          name: '设备检测项目C',
-          description: '工业设备腐蚀检测系统',
-          role: '测试人员',
-          progress: 30,
-          startDate: '2024-03-01',
-          deadline: '2024-10-31'
-        }
-      ]
-    }
-  },
-  computed: {
-    filteredProjects() {
-      return this.projects.filter(project => {
-        const matchesSearch = project.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                             project.description.toLowerCase().includes(this.searchQuery.toLowerCase())
-        const matchesRole = !this.roleFilter || project.role === this.roleFilter
-        return matchesSearch && matchesRole
-      })
-    }
-  },
-  methods: {
-    joinProject() {
-      this.$message.info('加入项目功能开发中')
-    },
-    viewProject(project) {
-      // 打开项目详情对话框
-      this.$alert(`
-        <div style="text-align: left;">
-          <h3>${project.name}</h3>
-          <p><strong>描述：</strong>${project.description}</p>
-          <p><strong>角色：</strong>${project.role}</p>
-          <p><strong>进度：</strong>${project.progress}%</p>
-          <p><strong>开始时间：</strong>${project.startDate}</p>
-          <p><strong>截止时间：</strong>${project.deadline}</p>
-        </div>
-      `, '项目详情', {
-        dangerouslyUseHTMLString: true,
-        confirmButtonText: '关闭'
-      })
-    },
-    viewTasks(project) {
-      // 跳转到任务页面，并传递项目ID
-      this.$router.push({
-        name: 'PersonalTasks',
-        query: { projectId: project.id, projectName: project.name }
-      })
-    }
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import api from '@/api'
+import dayjs from 'dayjs'
+
+const router = useRouter()
+
+// 响应式数据
+const loading = ref(false)
+const searchQuery = ref('')
+const roleFilter = ref('')
+const projects = ref([])
+
+// 角色映射
+const roleMap = {
+  'manager': '项目经理',
+  'developer': '开发人员',
+  'designer': '设计师',
+  'tester': '测试人员',
+  'member': '团队成员'
+}
+
+// 过滤后的项目列表
+const filteredProjects = computed(() => {
+  return projects.value.filter(project => {
+    const matchesSearch = project.name?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+                         project.description?.toLowerCase().includes(searchQuery.value.toLowerCase())
+    const matchesRole = !roleFilter.value || project.role === roleFilter.value
+    return matchesSearch && matchesRole
+  })
+})
+
+// 格式化日期
+const formatDate = (date) => {
+  return date ? dayjs(date).format('YYYY-MM-DD') : '-'
+}
+
+// 加载项目列表
+const loadProjects = async () => {
+  try {
+    loading.value = true
+    const response = await api.get('/persons/projects/')
+    
+    // 处理响应数据
+    const data = response.data.results || response.data || []
+    projects.value = data.map(project => ({
+      id: project.id,
+      name: project.name || project.title || '未命名项目',
+      description: project.description || '暂无描述',
+      role: roleMap[project.role] || project.role || '团队成员',
+      progress: project.progress || 0,
+      startDate: formatDate(project.start_date || project.startDate),
+      deadline: formatDate(project.end_date || project.deadline),
+      status: project.status || 'in_progress'
+    }))
+  } catch (error) {
+    console.error('加载项目列表失败:', error)
+    ElMessage.error('加载项目列表失败')
+    // 失败时使用空数组
+    projects.value = []
+  } finally {
+    loading.value = false
   }
 }
+
+// 加入项目
+const joinProject = () => {
+  ElMessage.info('加入项目功能开发中')
+}
+
+// 查看项目详情
+const viewProject = (project) => {
+  ElMessageBox.alert(
+    `
+      <div style="text-align: left;">
+        <p><strong>描述：</strong>${project.description}</p>
+        <p><strong>角色：</strong>${project.role}</p>
+        <p><strong>进度：</strong>${project.progress}%</p>
+        <p><strong>开始时间：</strong>${project.startDate}</p>
+        <p><strong>截止时间：</strong>${project.deadline}</p>
+      </div>
+    `,
+    project.name,
+    {
+      dangerouslyUseHTMLString: true,
+      confirmButtonText: '关闭'
+    }
+  )
+}
+
+// 查看任务
+const viewTasks = (project) => {
+  router.push({
+    path: '/dashboard/personal/tasks',
+    query: { projectId: project.id, projectName: project.name }
+  })
+}
+
+// 组件挂载时加载数据
+onMounted(() => {
+  loadProjects()
+})
 </script>
 
 <style scoped>
@@ -279,6 +309,13 @@ export default {
 .btn-sm {
   padding: 4px 8px;
   font-size: 12px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+  font-size: 16px;
 }
 </style>
 

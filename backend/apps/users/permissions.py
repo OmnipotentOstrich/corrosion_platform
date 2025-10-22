@@ -26,11 +26,16 @@ class IsOwnerOrAdmin(permissions.BasePermission):
 class IsEnterpriseAdmin(permissions.BasePermission):
     """
     企业管理员权限
+    系统管理员也可以访问
     """
     
     def has_permission(self, request, view):
         if not request.user.is_authenticated:
             return False
+        
+        # 系统管理员可以访问所有功能
+        if request.user.is_staff:
+            return True
         
         # 检查用户是否是企业用户且是管理员
         from .models import UserRole
@@ -51,20 +56,28 @@ class IsEnterpriseAdmin(permissions.BasePermission):
 class IsPersonalUser(permissions.BasePermission):
     """
     个人用户权限
+    系统管理员也可以访问
     """
     
     def has_permission(self, request, view):
         if not request.user.is_authenticated:
             return False
+        # 管理员可以访问所有个人功能
+        if request.user.is_staff:
+            return True
         return request.user.user_type == 'personal'
 
 
 class IsEnterpriseUser(permissions.BasePermission):
     """
     企业用户权限
+    管理员也可以访问
     """
     
     def has_permission(self, request, view):
         if not request.user.is_authenticated:
             return False
+        # 管理员可以访问所有企业功能
+        if request.user.is_staff:
+            return True
         return request.user.user_type == 'enterprise'

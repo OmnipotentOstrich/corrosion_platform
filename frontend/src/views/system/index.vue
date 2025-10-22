@@ -99,41 +99,59 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'SystemManagement',
-  data() {
-    return {
-      stats: {
-        totalUsers: 156,
-        activeUsers: 89,
-        totalRoles: 5,
-        totalPermissions: 24,
-        todayLogs: 234,
-        totalLogs: 12567,
-        configItems: 18,
-        lastUpdate: '2024-10-15',
-        totalProjects: 45,
-        totalResources: 78,
-        totalInfos: 23
+<script setup>
+import { ref, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
+import api from '@/api'
+
+// 系统统计数据
+const stats = ref({
+  totalUsers: 0,
+  activeUsers: 0,
+  totalRoles: 0,
+  totalPermissions: 0,
+  todayLogs: 0,
+  totalLogs: 0,
+  configItems: 0,
+  lastUpdate: '-',
+  totalProjects: 0,
+  totalResources: 0,
+  totalInfos: 0
+})
+
+// 加载系统统计数据
+const loadSystemStats = async () => {
+  try {
+    // 加载仪表板统计数据
+    const response = await api.get('/system/statistics/dashboard/')
+    if (response.data) {
+      stats.value = {
+        totalUsers: response.data.total_users || 0,
+        activeUsers: response.data.active_users || 0,
+        totalRoles: response.data.total_roles || 0,
+        totalPermissions: response.data.total_permissions || 0,
+        todayLogs: response.data.today_logs || 0,
+        totalLogs: response.data.total_logs || 0,
+        configItems: response.data.config_items || 0,
+        lastUpdate: response.data.last_update || '-',
+        totalProjects: response.data.total_projects || 0,
+        totalResources: response.data.total_resources || 0,
+        totalInfos: response.data.total_infos || 0
       }
     }
-  },
-  mounted() {
-    // 加载系统统计数据
-    this.loadSystemStats()
-  },
-  methods: {
-    loadSystemStats() {
-      // 从API加载系统统计数据
-      console.log('加载系统统计数据')
-    },
-    openSettings() {
-      console.log('打开系统设置')
-      alert('系统设置功能开发中...')
-    }
+  } catch (error) {
+    console.error('加载系统统计数据失败:', error)
+    // 如果API调用失败，使用默认值
   }
 }
+
+const openSettings = () => {
+  ElMessage.info('系统设置功能开发中...')
+}
+
+onMounted(() => {
+  loadSystemStats()
+})
 </script>
 
 <style scoped>

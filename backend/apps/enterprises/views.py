@@ -1,4 +1,4 @@
-from rest_framework import generics, status, permissions
+from rest_framework import generics, status, permissions, serializers
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.db.models import Q, Count, Sum
@@ -103,13 +103,19 @@ class EnterpriseDocumentListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         # 非管理员只能看到自己企业的文档
         if not self.request.user.is_staff:
-            enterprise = Enterprise.objects.get(user=self.request.user)
+            try:
+                enterprise = Enterprise.objects.get(user=self.request.user)
+            except Enterprise.DoesNotExist:
+                return Response({'error': '用户没有对应的企业'}, status=status.HTTP_404_NOT_FOUND)
             return EnterpriseDocument.objects.filter(enterprise=enterprise)
         return super().get_queryset()
     
     def perform_create(self, serializer):
         if not self.request.user.is_staff:
-            enterprise = Enterprise.objects.get(user=self.request.user)
+            try:
+                enterprise = Enterprise.objects.get(user=self.request.user)
+            except Enterprise.DoesNotExist:
+                return Response({'error': '用户没有对应的企业'}, status=status.HTTP_404_NOT_FOUND)
             serializer.save(enterprise=enterprise)
         else:
             serializer.save()
@@ -124,7 +130,10 @@ class EnterpriseDocumentDetailView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         # 非管理员只能看到自己企业的文档
         if not self.request.user.is_staff:
-            enterprise = Enterprise.objects.get(user=self.request.user)
+            try:
+                enterprise = Enterprise.objects.get(user=self.request.user)
+            except Enterprise.DoesNotExist:
+                return Response({'error': '用户没有对应的企业'}, status=status.HTTP_404_NOT_FOUND)
             return EnterpriseDocument.objects.filter(enterprise=enterprise)
         return super().get_queryset()
 
@@ -162,14 +171,22 @@ class EmployeeListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         # 非管理员只能看到自己企业的员工
         if not self.request.user.is_staff:
-            enterprise = Enterprise.objects.get(user=self.request.user)
-            return Employee.objects.filter(enterprise=enterprise)
+            try:
+                enterprise = Enterprise.objects.get(user=self.request.user)
+                return Employee.objects.filter(enterprise=enterprise)
+            except Enterprise.DoesNotExist:
+                # 如果用户没有对应的企业，返回空查询集
+                return Employee.objects.none()
         return super().get_queryset()
     
     def get_serializer_context(self):
         context = super().get_serializer_context()
         if not self.request.user.is_staff:
-            context['enterprise'] = Enterprise.objects.get(user=self.request.user)
+            try:
+                context['enterprise'] = Enterprise.objects.get(user=self.request.user)
+            except Enterprise.DoesNotExist:
+                # 如果用户没有对应的企业，不设置enterprise上下文
+                pass
         return context
 
 
@@ -182,8 +199,12 @@ class EmployeeDetailView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         # 非管理员只能看到自己企业的员工
         if not self.request.user.is_staff:
-            enterprise = Enterprise.objects.get(user=self.request.user)
-            return Employee.objects.filter(enterprise=enterprise)
+            try:
+                enterprise = Enterprise.objects.get(user=self.request.user)
+                return Employee.objects.filter(enterprise=enterprise)
+            except Enterprise.DoesNotExist:
+                # 如果用户没有对应的企业，返回空查询集
+                return Employee.objects.none()
         return super().get_queryset()
 
 
@@ -201,14 +222,21 @@ class EnterpriseProjectListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         # 非管理员只能看到自己企业的项目
         if not self.request.user.is_staff:
-            enterprise = Enterprise.objects.get(user=self.request.user)
-            return EnterpriseProject.objects.filter(enterprise=enterprise)
+            try:
+                enterprise = Enterprise.objects.get(user=self.request.user)
+                return EnterpriseProject.objects.filter(enterprise=enterprise)
+            except Enterprise.DoesNotExist:
+                # 如果企业不存在，返回空查询集
+                return EnterpriseProject.objects.none()
         return super().get_queryset()
     
     def perform_create(self, serializer):
         if not self.request.user.is_staff:
-            enterprise = Enterprise.objects.get(user=self.request.user)
-            serializer.save(enterprise=enterprise)
+            try:
+                enterprise = Enterprise.objects.get(user=self.request.user)
+                serializer.save(enterprise=enterprise)
+            except Enterprise.DoesNotExist:
+                raise serializers.ValidationError('企业信息不存在')
         else:
             serializer.save()
 
@@ -222,7 +250,10 @@ class EnterpriseProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         # 非管理员只能看到自己企业的项目
         if not self.request.user.is_staff:
-            enterprise = Enterprise.objects.get(user=self.request.user)
+            try:
+                enterprise = Enterprise.objects.get(user=self.request.user)
+            except Enterprise.DoesNotExist:
+                return Response({'error': '用户没有对应的企业'}, status=status.HTTP_404_NOT_FOUND)
             return EnterpriseProject.objects.filter(enterprise=enterprise)
         return super().get_queryset()
 
@@ -232,14 +263,53 @@ class EnterpriseProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
 def enterprise_statistics(request):
     """企业统计数据"""
     try:
+        # 如果是管理员，返回所有企业的汇总统计
+        if request.user.is_staff:
+            total_projects = EnterpriseProject.objects.count()
+            completed_projects = EnterpriseProject.objects.filter(status='completed').count()
+            ongoing_projects = EnterpriseProject.objects.filter(status='in_progress').count()
+            total_employees = Employee.objects.filter(is_active=True).count()
+            total_revenue = EnterpriseProject.objects.filter(
+                contract_amount__isnull=False
+            ).aggregate(total=Sum('contract_amount'))['total'] or 0
+            
+            data = {
+                'total_projects': total_projects,
+                'ongoing_projects': ongoing_projects,
+                'completed_projects': completed_projects,
+                'total_employees': total_employees,
+                'total_revenue': str(total_revenue),
+                'total_contracts': total_projects,
+            }
+            return Response(data)
+        
+        # 企业用户返回自己的统计
         enterprise = Enterprise.objects.get(user=request.user)
-        statistics = EnterpriseStatistics.objects.get(enterprise=enterprise)
+        
+        # 如果统计数据不存在，创建默认的
+        statistics, created = EnterpriseStatistics.objects.get_or_create(
+            enterprise=enterprise,
+            defaults={
+                'total_projects': EnterpriseProject.objects.filter(enterprise=enterprise).count(),
+                'completed_projects': EnterpriseProject.objects.filter(enterprise=enterprise, status='completed').count(),
+                'total_employees': Employee.objects.filter(enterprise=enterprise, is_active=True).count(),
+                'total_revenue': 0,
+                'total_contracts': 0,
+            }
+        )
+        
         serializer = EnterpriseStatisticsSerializer(statistics)
         return Response(serializer.data)
     except Enterprise.DoesNotExist:
-        return Response({'error': '企业信息不存在'}, status=status.HTTP_404_NOT_FOUND)
-    except EnterpriseStatistics.DoesNotExist:
-        return Response({'error': '统计数据不存在'}, status=status.HTTP_404_NOT_FOUND)
+        # 如果企业不存在，返回空统计
+        return Response({
+            'total_projects': 0,
+            'ongoing_projects': 0,
+            'completed_projects': 0,
+            'total_employees': 0,
+            'total_revenue': '0',
+            'total_contracts': 0,
+        })
 
 
 @api_view(['POST'])
