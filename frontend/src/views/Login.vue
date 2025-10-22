@@ -198,6 +198,9 @@ const handleLogin = async () => {
     })
     
     if (result.success) {
+      // 等待菜单设置完成（给一点时间让store完成菜单设置）
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
       // 根据用户类型跳转到不同页面
       if (result.user.user_type === 'enterprise') {
         router.push('/dashboard/enterprise')

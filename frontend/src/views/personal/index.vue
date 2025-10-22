@@ -68,9 +68,40 @@ const stats = ref({
   completionRate: '0%'
 })
 
+// 获取当前用户信息
+const currentUser = ref(null)
+
+// 检查用户类型
+const checkUserType = async () => {
+  try {
+    const response = await api.get('/auth/profile/')
+    currentUser.value = response.data
+    return response.data.user_type
+  } catch (error) {
+    console.error('获取用户信息失败:', error)
+    return null
+  }
+}
+
 // 加载个人统计数据
 const loadPersonalStats = async () => {
   try {
+    // 先检查用户类型
+    const userType = await checkUserType()
+    
+    // 如果是企业用户，不加载个人统计数据
+    if (userType === 'enterprise') {
+      console.log('企业用户无需加载个人统计数据')
+      stats.value = {
+        ongoingProjects: 0,
+        pendingTasks: 0,
+        completedTasks: 0,
+        completionRate: '0%'
+      }
+      return
+    }
+    
+    // 个人用户才加载统计数据
     const response = await api.get('/persons/statistics/')
     if (response.data) {
       stats.value = {
@@ -83,6 +114,12 @@ const loadPersonalStats = async () => {
   } catch (error) {
     console.error('加载个人统计数据失败:', error)
     // 如果API调用失败，使用默认值（已经在ref中设置）
+    stats.value = {
+      ongoingProjects: 0,
+      pendingTasks: 0,
+      completedTasks: 0,
+      completionRate: '0%'
+    }
   }
 }
 

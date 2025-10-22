@@ -32,8 +32,31 @@ export const useUserStore = defineStore('user', () => {
           console.log('使用测试模式，跳过API调用')
           return
         }
+        
+        // 获取用户信息
         await getUserProfile()
-        await getUserMenus()
+        
+        // 尝试获取用户菜单
+        try {
+          await getUserMenus()
+        } catch (error) {
+          console.log('获取用户菜单失败，将使用默认菜单')
+        }
+        
+        // 【重要】始终根据用户类型强制设置正确的菜单
+        if (user.value) {
+          console.log(`页面初始化，用户类型: ${user.value.user_type}，强制设置对应菜单`)
+          if (user.value.is_staff || user.value.is_superuser) {
+            console.log('→ 设置管理员菜单')
+            setDefaultAdminMenus()
+          } else if (user.value.user_type === 'enterprise') {
+            console.log('→ 设置企业用户菜单')
+            setDefaultEnterpriseMenus()
+          } else {
+            console.log('→ 设置个人用户菜单')
+            setDefaultPersonalMenus()
+          }
+        }
       } catch (error) {
         console.error('初始化用户信息失败:', error)
         // 如果是测试环境，不清除token
@@ -58,8 +81,25 @@ export const useUserStore = defineStore('user', () => {
       localStorage.setItem('token', access)
       localStorage.setItem('refreshToken', refresh)
       
-      // 获取用户菜单
-      await getUserMenus()
+      // 尝试获取用户菜单（但不依赖它）
+      try {
+        await getUserMenus()
+      } catch (error) {
+        console.log('获取用户菜单失败，将使用默认菜单')
+      }
+      
+      // 【重要】始终根据用户类型强制设置正确的菜单，确保菜单显示正确
+      console.log(`登录成功，用户类型: ${userData.user_type}，强制设置对应菜单`)
+      if (userData.is_staff || userData.is_superuser) {
+        console.log('→ 设置管理员菜单')
+        setDefaultAdminMenus()
+      } else if (userData.user_type === 'enterprise') {
+        console.log('→ 设置企业用户菜单')
+        setDefaultEnterpriseMenus()
+      } else {
+        console.log('→ 设置个人用户菜单')
+        setDefaultPersonalMenus()
+      }
       
       ElMessage.success('登录成功')
       return { success: true, user: userData }
@@ -201,6 +241,19 @@ export const useUserStore = defineStore('user', () => {
       return response.data
     } catch (error) {
       console.error('获取用户菜单失败:', error)
+      // API调用失败时，根据用户类型设置默认菜单
+      if (user.value) {
+        if (user.value.is_staff || user.value.is_superuser) {
+          console.log('设置管理员默认菜单')
+          setDefaultAdminMenus()
+        } else if (user.value.user_type === 'enterprise') {
+          console.log('设置企业用户默认菜单')
+          setDefaultEnterpriseMenus()
+        } else {
+          console.log('设置个人用户默认菜单')
+          setDefaultPersonalMenus()
+        }
+      }
       return []
     }
   }
@@ -401,20 +454,27 @@ export const useUserStore = defineStore('user', () => {
       },
       {
         id: 2,
-        name: '企业中心',
+        name: '企业管理',  // 修改为"企业管理"
         code: 'enterprise',
         url: '/dashboard/enterprise',
         icon: 'OfficeBuilding',
         children: [
           {
             id: 21,
+            name: '企业信息',  // 添加企业信息子菜单
+            code: 'enterprise-info',
+            url: '/dashboard/enterprise',
+            icon: 'OfficeBuilding'
+          },
+          {
+            id: 22,
             name: '项目管理',
             code: 'enterprise-projects',
             url: '/dashboard/enterprise/projects',
             icon: 'FolderOpened'
           },
           {
-            id: 22,
+            id: 23,
             name: '员工管理',
             code: 'enterprise-employees',
             url: '/dashboard/enterprise/employees',
@@ -538,6 +598,9 @@ export const useUserStore = defineStore('user', () => {
     hasPermission,
     hasMenu,
     setUser,
-    setToken
+    setToken,
+    setDefaultAdminMenus,
+    setDefaultEnterpriseMenus,
+    setDefaultPersonalMenus
   }
 })

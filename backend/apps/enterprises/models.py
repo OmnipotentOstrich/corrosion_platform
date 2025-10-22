@@ -116,23 +116,37 @@ class Employee(models.Model):
 class EnterpriseProject(models.Model):
     """企业项目"""
     PROJECT_STATUS_CHOICES = [
-        ('planning', '规划中'),
-        ('in_progress', '进行中'),
+        ('pending', '待开始'),
+        ('active', '进行中'),
         ('completed', '已完成'),
-        ('suspended', '已暂停'),
+        ('paused', '暂停'),
         ('cancelled', '已取消'),
+    ]
+    
+    PROJECT_TYPE_CHOICES = [
+        ('corrosion', '防腐工程'),
+        ('insulation', '保温工程'),
+        ('comprehensive', '综合工程'),
+        ('maintenance', '维护工程'),
+        ('other', '其他'),
     ]
     
     enterprise = models.ForeignKey(Enterprise, on_delete=models.CASCADE, related_name='projects', verbose_name='企业')
     name = models.CharField(max_length=200, verbose_name='项目名称')
-    description = models.TextField(verbose_name='项目描述')
-    client = models.CharField(max_length=200, verbose_name='客户')
+    project_code = models.CharField(max_length=50, blank=True, verbose_name='项目编号')
+    description = models.TextField(blank=True, verbose_name='项目描述')
+    project_type = models.CharField(max_length=20, choices=PROJECT_TYPE_CHOICES, default='other', verbose_name='项目类型')
+    client = models.CharField(max_length=200, blank=True, verbose_name='客户')
+    manager = models.CharField(max_length=100, blank=True, verbose_name='项目负责人')
+    budget = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True, verbose_name='项目预算')
     contract_amount = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True, verbose_name='合同金额')
     start_date = models.DateField(verbose_name='开始日期')
     end_date = models.DateField(null=True, blank=True, verbose_name='结束日期')
-    status = models.CharField(max_length=20, choices=PROJECT_STATUS_CHOICES, default='planning', verbose_name='项目状态')
+    status = models.CharField(max_length=20, choices=PROJECT_STATUS_CHOICES, default='pending', verbose_name='项目状态')
     progress = models.IntegerField(default=0, verbose_name='进度百分比')
     location = models.CharField(max_length=500, blank=True, verbose_name='项目地点')
+    contact_phone = models.CharField(max_length=20, blank=True, verbose_name='联系电话')
+    notes = models.TextField(blank=True, verbose_name='备注')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
     

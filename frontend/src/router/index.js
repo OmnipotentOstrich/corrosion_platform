@@ -186,6 +186,22 @@ router.beforeEach(async (to, from, next) => {
     }
   }
   
+  // 如果用户已登录但没有菜单，设置默认菜单
+  if (userStore.user && (!userStore.menus || userStore.menus.length === 0)) {
+    console.log('路由守卫: 用户已登录但菜单为空，设置默认菜单')
+    
+    if (userStore.user.is_staff || userStore.user.is_superuser) {
+      console.log('路由守卫: 设置管理员菜单')
+      userStore.setDefaultAdminMenus()
+    } else if (userStore.user.user_type === 'enterprise') {
+      console.log('路由守卫: 设置企业用户菜单')
+      userStore.setDefaultEnterpriseMenus()
+    } else {
+      console.log('路由守卫: 设置个人用户菜单')
+      userStore.setDefaultPersonalMenus()
+    }
+  }
+  
   // 检查是否需要认证（明确要求认证才检查）
   if (to.meta.requiresAuth === true) {
     // 需要认证的页面，检查是否已登录

@@ -13,8 +13,8 @@ from .models import (
 )
 from .serializers import (
     EnterpriseSerializer, EnterpriseCreateSerializer, EnterpriseDocumentSerializer,
-    EmployeeSerializer, EmployeeCreateSerializer, EnterpriseProjectSerializer,
-    EnterpriseStatisticsSerializer, EnterpriseDashboardSerializer
+    EmployeeSerializer, EmployeeCreateSerializer, EmployeeUpdateSerializer,
+    EnterpriseProjectSerializer, EnterpriseStatisticsSerializer, EnterpriseDashboardSerializer
 )
 from apps.users.permissions import IsEnterpriseUser, IsEnterpriseAdmin
 
@@ -195,6 +195,12 @@ class EmployeeDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Employee.objects.all()
     serializer_class = EmployeeSerializer
     permission_classes = [permissions.IsAuthenticated, IsEnterpriseUser]
+    
+    def get_serializer_class(self):
+        # 更新操作使用EmployeeUpdateSerializer
+        if self.request.method in ['PUT', 'PATCH']:
+            return EmployeeUpdateSerializer
+        return EmployeeSerializer
     
     def get_queryset(self):
         # 非管理员只能看到自己企业的员工

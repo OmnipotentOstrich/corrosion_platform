@@ -151,18 +151,55 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
         return employee
 
 
+class EmployeeUpdateSerializer(serializers.ModelSerializer):
+    """员工更新序列化器"""
+    email = serializers.EmailField(required=False)
+    phone = serializers.CharField(required=False)
+    first_name = serializers.CharField(required=False)
+    last_name = serializers.CharField(required=False)
+    
+    class Meta:
+        model = Employee
+        fields = [
+            'employee_id', 'first_name', 'last_name', 'email', 'phone',
+            'position', 'department', 'hire_date', 'salary', 'is_active'
+        ]
+    
+    def update(self, instance, validated_data):
+        # 更新用户相关字段
+        user = instance.user
+        if 'email' in validated_data:
+            user.email = validated_data.pop('email')
+        if 'phone' in validated_data:
+            user.phone = validated_data.pop('phone')
+        if 'first_name' in validated_data:
+            user.first_name = validated_data.pop('first_name')
+        if 'last_name' in validated_data:
+            user.last_name = validated_data.pop('last_name')
+        user.save()
+        
+        # 更新员工相关字段
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        
+        return instance
+
+
 class EnterpriseProjectSerializer(serializers.ModelSerializer):
     """企业项目序列化器"""
     status_display = serializers.CharField(source='get_status_display', read_only=True)
+    project_type_display = serializers.CharField(source='get_project_type_display', read_only=True)
     enterprise_name = serializers.CharField(source='enterprise.name', read_only=True)
     
     class Meta:
         model = EnterpriseProject
         fields = [
-            'id', 'enterprise', 'enterprise_name', 'name', 'description',
-            'client', 'contract_amount', 'start_date', 'end_date',
-            'status', 'status_display', 'progress', 'location',
-            'created_at', 'updated_at'
+            'id', 'enterprise', 'enterprise_name', 'name', 'project_code',
+            'description', 'project_type', 'project_type_display', 'client',
+            'manager', 'budget', 'contract_amount', 'start_date', 'end_date',
+            'status', 'status_display', 'progress', 'location', 'contact_phone',
+            'notes', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'enterprise', 'created_at', 'updated_at']
 

@@ -9,6 +9,122 @@
       </div>
     </div>
     
+    <!-- 编辑员工对话框 -->
+    <el-dialog 
+      v-model="showEditDialog" 
+      title="编辑员工" 
+      width="600px"
+      :before-close="handleCloseEditDialog"
+    >
+      <el-form 
+        ref="editFormRef"
+        :model="editForm" 
+        :rules="editFormRules" 
+        label-width="100px"
+      >
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="用户名" prop="username">
+              <el-input v-model="editForm.username" placeholder="请输入用户名" disabled></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="工号" prop="employee_id">
+              <el-input v-model="editForm.employee_id" placeholder="请输入工号"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="姓名" prop="first_name">
+              <el-input v-model="editForm.first_name" placeholder="请输入姓名"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="邮箱" prop="email">
+              <el-input v-model="editForm.email" placeholder="请输入邮箱"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="手机号" prop="phone">
+              <el-input v-model="editForm.phone" placeholder="请输入手机号"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="职位" prop="position">
+              <el-select v-model="editForm.position" placeholder="请选择职位" style="width: 100%">
+                <el-option label="管理员" value="admin"></el-option>
+                <el-option label="经理" value="manager"></el-option>
+                <el-option label="工程师" value="engineer"></el-option>
+                <el-option label="技术员" value="technician"></el-option>
+                <el-option label="销售" value="sales"></el-option>
+                <el-option label="其他" value="other"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="部门" prop="department">
+              <el-select v-model="editForm.department" placeholder="请选择部门" style="width: 100%">
+                <el-option label="工程部" value="engineering"></el-option>
+                <el-option label="管理部" value="management"></el-option>
+                <el-option label="销售部" value="sales"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="入职日期" prop="hire_date">
+              <el-date-picker 
+                v-model="editForm.hire_date" 
+                type="date" 
+                placeholder="请选择入职日期"
+                style="width: 100%"
+                format="YYYY-MM-DD"
+                value-format="YYYY-MM-DD"
+              ></el-date-picker>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="薪资" prop="salary">
+              <el-input-number 
+                v-model="editForm.salary" 
+                placeholder="请输入薪资"
+                :min="0"
+                :precision="2"
+                style="width: 100%"
+              ></el-input-number>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="状态" prop="is_active">
+              <el-radio-group v-model="editForm.is_active">
+                <el-radio :label="true">在职</el-radio>
+                <el-radio :label="false">离职</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+      
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="handleCloseEditDialog">取消</el-button>
+          <el-button type="primary" @click="submitEditEmployee" :loading="editing">
+            {{ editing ? '保存中...' : '确定保存' }}
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
+    
     <!-- 添加员工对话框 -->
     <el-dialog 
       v-model="showAddDialog" 
@@ -88,7 +204,11 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="部门" prop="department">
-              <el-input v-model="addForm.department" placeholder="请输入部门"></el-input>
+              <el-select v-model="addForm.department" placeholder="请选择部门" style="width: 100%">
+                <el-option label="工程部" value="engineering"></el-option>
+                <el-option label="管理部" value="management"></el-option>
+                <el-option label="销售部" value="sales"></el-option>
+              </el-select>
             </el-form-item>
           </el-col>
         </el-row>
@@ -173,7 +293,7 @@
           <tr v-for="employee in filteredEmployees" :key="employee.id">
             <td>{{ employee.username || (employee.first_name + ' ' + employee.last_name) }}</td>
             <td>{{ employee.employee_id }}</td>
-            <td>{{ employee.department }}</td>
+            <td>{{ departmentDisplayMap[employee.department] || employee.department }}</td>
             <td>{{ employee.position_display || employee.position }}</td>
             <td>{{ employee.hire_date }}</td>
             <td>
@@ -209,7 +329,9 @@ export default {
       employees: [],
       loading: false,
       showAddDialog: false,
+      showEditDialog: false,
       adding: false,
+      editing: false,
       enterprises: [],
       userType: 'enterprise', // 默认企业用户，管理员会动态设置
       addForm: {
@@ -224,6 +346,19 @@ export default {
         hire_date: '',
         salary: null,
         enterprise_id: null
+      },
+      editForm: {
+        id: null,
+        username: '',
+        employee_id: '',
+        first_name: '',
+        email: '',
+        phone: '',
+        position: '',
+        department: '',
+        hire_date: '',
+        salary: null,
+        is_active: true
       },
       addFormRules: {
         username: [
@@ -257,6 +392,22 @@ export default {
         hire_date: [
           { required: true, message: '请选择入职日期', trigger: 'change' }
         ]
+      },
+      editFormRules: {
+        employee_id: [
+          { required: true, message: '请输入工号', trigger: 'blur' }
+        ],
+        first_name: [
+          { required: true, message: '请输入姓名', trigger: 'blur' }
+        ],
+        email: [
+          { required: true, message: '请输入邮箱', trigger: 'blur' },
+          { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
+        ],
+        phone: [
+          { required: true, message: '请输入手机号', trigger: 'blur' },
+          { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号格式', trigger: 'blur' }
+        ]
       }
     }
   },
@@ -280,6 +431,14 @@ export default {
         const matchesDepartment = !this.departmentFilter || employee.department === this.departmentFilter
         return matchesSearch && matchesDepartment
       })
+    },
+    // 部门显示映射
+    departmentDisplayMap() {
+      return {
+        'engineering': '工程部',
+        'management': '管理部',
+        'sales': '销售部'
+      }
     }
   },
   methods: {
@@ -327,12 +486,38 @@ export default {
       const timestamp = Date.now().toString().slice(-6)
       const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
       
+      // 生成用户名：emp_时间戳
       this.addForm.username = `emp_${timestamp}`
+      
+      // 生成工号：EMP + 时间戳
       this.addForm.employee_id = `EMP${timestamp}`
+      
+      // 生成姓名：员工 + 时间戳后4位
+      this.addForm.first_name = `员工${timestamp.slice(-4)}`
+      
+      // 生成邮箱：emp时间戳@company.com
       this.addForm.email = `emp${timestamp}@company.com`
-      this.addForm.phone = `138${timestamp}`
+      
+      // 生成手机号：138 + 8位数字
+      this.addForm.phone = `138${timestamp}${randomNum.slice(0, 2)}`
+      
+      // 生成默认密码
       this.addForm.password = 'Employee123'
+      
+      // 设置默认部门为工程部
+      this.addForm.department = 'engineering'
+      
+      // 设置入职日期为今天
       this.addForm.hire_date = new Date().toISOString().split('T')[0]
+      
+      // 清除之前的验证错误
+      this.$nextTick(() => {
+        if (this.$refs.addFormRef) {
+          this.$refs.addFormRef.clearValidate()
+        }
+      })
+      
+      ElMessage.success('已生成建议信息，请检查并修改')
     },
     
     // 提交添加员工
@@ -401,42 +586,155 @@ export default {
       }
     },
     viewEmployee(employee) {
+      // 安全获取字段值，避免undefined
+      const getName = () => {
+        return employee.username || employee.first_name || employee.last_name || '未设置姓名'
+      }
+      
+      const getEmployeeId = () => {
+        return employee.employee_id || '未设置'
+      }
+      
+      const getDepartment = () => {
+        const deptMap = {
+          'engineering': '工程部',
+          'management': '管理部',
+          'sales': '销售部'
+        }
+        return deptMap[employee.department] || employee.department || '未分配部门'
+      }
+      
+      const getPosition = () => {
+        return employee.position_display || employee.position || '未设置职位'
+      }
+      
+      const getHireDate = () => {
+        return employee.hire_date || employee.created_at || '未设置'
+      }
+      
+      const getStatus = () => {
+        return employee.is_active ? '在职' : '离职'
+      }
+      
+      const getEmail = () => {
+        return employee.email || '未设置'
+      }
+      
+      const getPhone = () => {
+        return employee.phone || '未设置'
+      }
+      
+      const getSalary = () => {
+        return employee.salary ? `￥${employee.salary}` : '未设置'
+      }
+      
       ElMessageBox.alert(`
-        <div style="text-align: left;">
-          <h3>${employee.name}</h3>
-          <p><strong>工号：</strong>${employee.employeeId}</p>
-          <p><strong>部门：</strong>${employee.department}</p>
-          <p><strong>职位：</strong>${employee.position}</p>
-          <p><strong>入职日期：</strong>${employee.hireDate}</p>
-          <p><strong>状态：</strong>${employee.statusText}</p>
+        <div style="text-align: left; line-height: 1.8;">
+          <h3 style="margin-bottom: 15px; color: #333;">${getName()}</h3>
+          <p><strong>工号：</strong>${getEmployeeId()}</p>
+          <p><strong>邮箱：</strong>${getEmail()}</p>
+          <p><strong>手机号：</strong>${getPhone()}</p>
+          <p><strong>部门：</strong>${getDepartment()}</p>
+          <p><strong>职位：</strong>${getPosition()}</p>
+          <p><strong>入职日期：</strong>${getHireDate()}</p>
+          <p><strong>薪资：</strong>${getSalary()}</p>
+          <p><strong>状态：</strong><span style="color: ${employee.is_active ? '#67C23A' : '#F56C6C'}">${getStatus()}</span></p>
         </div>
       `, '员工详情', {
         dangerouslyUseHTMLString: true,
         confirmButtonText: '关闭'
       })
     },
-    async editEmployee(employee) {
+    // 打开编辑对话框
+    editEmployee(employee) {
+      // 填充编辑表单
+      this.editForm = {
+        id: employee.id,
+        username: employee.username || '',
+        employee_id: employee.employee_id || '',
+        first_name: employee.first_name || employee.username || '',
+        email: employee.email || '',
+        phone: employee.phone || '',
+        position: employee.position || '',
+        department: employee.department || '',
+        hire_date: employee.hire_date || '',
+        salary: employee.salary || null,
+        is_active: employee.is_active !== undefined ? employee.is_active : true
+      }
+      
+      // 显示编辑对话框
+      this.showEditDialog = true
+    },
+    
+    // 提交编辑员工
+    async submitEditEmployee() {
       try {
-        const { value } = await ElMessageBox.prompt(`编辑员工信息 - ${employee.name}`, '编辑员工', {
-          confirmButtonText: '保存',
-          cancelButtonText: '取消',
-          inputValue: employee.name,
-          inputPattern: /.+/,
-          inputErrorMessage: '姓名不能为空'
-        })
+        await this.$refs.editFormRef.validate()
         
-        await api.put(`/enterprises/employees/${employee.id}/`, {
-          ...employee,
-          name: value
-        })
+        this.editing = true
+        
+        // 准备更新数据（不包含username，因为用户名不允许修改）
+        const updateData = {
+          employee_id: this.editForm.employee_id,
+          first_name: this.editForm.first_name,
+          email: this.editForm.email,
+          phone: this.editForm.phone,
+          position: this.editForm.position,
+          department: this.editForm.department,
+          hire_date: this.editForm.hire_date,
+          salary: this.editForm.salary,
+          is_active: this.editForm.is_active
+        }
+        
+        await api.put(`/enterprises/employees/${this.editForm.id}/`, updateData)
         
         ElMessage.success('员工信息已更新')
+        this.handleCloseEditDialog()
         this.loadEmployees()
       } catch (error) {
-        if (error !== 'cancel') {
-          console.error('更新员工失败:', error)
-          ElMessage.error('更新员工失败')
+        console.error('更新员工失败:', error)
+        
+        if (error.response?.data) {
+          const errorData = error.response.data
+          if (typeof errorData === 'object') {
+            // 显示第一个错误消息
+            const firstError = Object.values(errorData)[0]
+            ElMessage.error(Array.isArray(firstError) ? firstError[0] : firstError)
+          } else {
+            ElMessage.error(errorData)
+          }
+        } else {
+          ElMessage.error('更新员工失败，请稍后重试')
         }
+      } finally {
+        this.editing = false
+      }
+    },
+    
+    // 关闭编辑对话框
+    handleCloseEditDialog() {
+      this.showEditDialog = false
+      this.resetEditForm()
+    },
+    
+    // 重置编辑表单
+    resetEditForm() {
+      this.editForm = {
+        id: null,
+        username: '',
+        employee_id: '',
+        first_name: '',
+        email: '',
+        phone: '',
+        position: '',
+        department: '',
+        hire_date: '',
+        salary: null,
+        is_active: true
+      }
+      // 清除表单验证
+      if (this.$refs.editFormRef) {
+        this.$refs.editFormRef.clearValidate()
       }
     }
   }

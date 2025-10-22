@@ -97,10 +97,33 @@ const formatDate = (date) => {
   return date ? dayjs(date).format('YYYY-MM-DD') : '-'
 }
 
+// 获取当前用户信息
+const getCurrentUser = async () => {
+  try {
+    const response = await api.get('/auth/profile/')
+    return response.data
+  } catch (error) {
+    console.error('获取用户信息失败:', error)
+    return null
+  }
+}
+
 // 加载项目列表
 const loadProjects = async () => {
   try {
     loading.value = true
+    
+    // 先检查用户类型
+    const user = await getCurrentUser()
+    if (user && user.user_type === 'enterprise') {
+      // 企业用户显示空列表
+      console.log('企业用户访问个人项目页面')
+      projects.value = []
+      ElMessage.info('企业用户请在左侧菜单选择"企业管理 > 项目管理"')
+      loading.value = false
+      return
+    }
+    
     const response = await api.get('/persons/projects/')
     
     // 处理响应数据
@@ -117,7 +140,12 @@ const loadProjects = async () => {
     }))
   } catch (error) {
     console.error('加载项目列表失败:', error)
-    ElMessage.error('加载项目列表失败')
+    // 如果是403错误，说明是企业用户或权限不足
+    if (error.response?.status === 403) {
+      ElMessage.warning('企业用户请在左侧菜单选择"企业管理"模块')
+    } else {
+      ElMessage.error('加载项目列表失败')
+    }
     // 失败时使用空数组
     projects.value = []
   } finally {

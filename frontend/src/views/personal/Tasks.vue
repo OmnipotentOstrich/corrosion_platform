@@ -208,9 +208,32 @@ const filteredTasks = computed(() => {
 })
 
 // 加载任务列表
+// 获取当前用户信息
+const getCurrentUser = async () => {
+  try {
+    const response = await api.get('/auth/profile/')
+    return response.data
+  } catch (error) {
+    console.error('获取用户信息失败:', error)
+    return null
+  }
+}
+
 const loadTasks = async () => {
   try {
     loading.value = true
+    
+    // 先检查用户类型
+    const user = await getCurrentUser()
+    if (user && user.user_type === 'enterprise') {
+      // 企业用户显示空列表
+      console.log('企业用户访问个人任务页面')
+      tasks.value = []
+      ElMessage.info('企业用户请在左侧菜单选择"企业管理"模块')
+      loading.value = false
+      return
+    }
+    
     const response = await api.get('/persons/tasks/')
     
     const data = response.data.results || response.data || []
@@ -234,7 +257,12 @@ const loadTasks = async () => {
     }
   } catch (error) {
     console.error('加载任务列表失败:', error)
-    ElMessage.error('加载任务列表失败')
+    // 如果是403错误，说明是企业用户或权限不足
+    if (error.response?.status === 403) {
+      ElMessage.warning('企业用户请在左侧菜单选择"企业管理"模块')
+    } else {
+      ElMessage.error('加载任务列表失败')
+    }
     tasks.value = []
   } finally {
     loading.value = false
